@@ -19,12 +19,12 @@ COMMON_PORTS = [53, 80, 23]  # DNS, HTTP, Telnet
 
 # Context-aware flags for confusion
 CONTEXT_FLAGS = {
-    "dns": ["FLAG{DNSServer}", "FLAG{DomainLookup}", "FLAG{NameResolution}", "FLAG{YouStillDidn'tFindMe-2025}"],
-    "http": ["FLAG{HTTP-Requests}", "FLAG{WebServer}", "FLAG{GetRequest}", "FLAG{UMAKITSO-2024}"],
-    "telnet": ["FLAG{LetMeIN}", "FLAG{TelnetAccess}", "FLAG{RemoteShell}", "FLAG{decoy-2025}"],
-    "tcp": ["FLAG{PortScan}", "FLAG{TCPConnection}", "FLAG{SYNflood}", "FLAG{UMAKITSO-2023}"],
-    "udp": ["FLAG{UDPStream}", "FLAG{DatagramFlow}", "FLAG{UDPFlood}", "FLAG{Isthisme?No}"],
-    "ping": ["FLAG{ICMPFlood}", "FLAG{PingPong}", "FLAG{EchoRequest}", "FLAG{HAHAHAHA}"],
+    "dns": ["FLAG{DNSServer}", "FLAG{YouStillDidn'tFindMe-2025}"],
+    "http": ["FLAG{HTTP-Requests}", "FLAG{UMAKITSO-2024}"],
+    "telnet": ["FLAG{LetMeIN}", "FLAG{decoy-2025}"],
+    "tcp": ["FLAG{PortScan}", "FLAG{UMAKITSO-2023}"],
+    "udp": ["FLAG{UDPStream}", "FLAG{Isthisme?No}"],
+    "ping": ["FLAG{ICMPFlood}", "FLAG{HAHAHAHA}"],
     "real": "FLAG{YouFoundMe-2025}"
 }
 
