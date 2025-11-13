@@ -18,7 +18,14 @@ This project creates a realistic CTF challenge where participants must analyze n
 
 ## Setup Instructions
 
-### 1. Server Preparation
+### 1. Download from GitHub
+```bash
+# Clone the repository
+git clone https://github.com/EeanDev/medium-lab.git
+cd medium-lab
+```
+
+### 2. Server Preparation
 Run the setup script on Ubuntu 24.04:
 ```bash
 sudo ./setup.sh
@@ -28,22 +35,16 @@ This will:
 - Install required packages (netcat, python3, ufw, etc.)
 - Create a limited `ctf` user
 - Configure firewall and SSH hardening
-- Set up systemd services
+- Set up cron jobs for automatic execution
 - Enable automatic updates
 
-### 2. Manual Setup (Alternative)
-```bash
-# Install dependencies
-sudo apt update
-sudo apt install netcat-openbsd python3 ufw fail2ban
-
-# Create directories and copy files
-sudo mkdir -p /opt/ctf-lab
-sudo cp *.py /opt/ctf-lab/
-sudo chown -R ctf:ctf /opt/ctf-lab/
+### 3. Configure Admin Users
+Edit the admin users list in `packet_sender.py`:
+```python
+admin_users = ['root', 'your_username']  # Add your admin usernames
 ```
 
-### 3. SSH Key Setup
+### 4. SSH Key Setup
 Add your SSH public key to the ctf user:
 ```bash
 sudo -u ctf mkdir -p /home/ctf/.ssh
@@ -52,17 +53,21 @@ echo "your_public_key_here" | sudo -u ctf tee /home/ctf/.ssh/authorized_keys
 sudo -u ctf chmod 600 /home/ctf/.ssh/authorized_keys
 ```
 
+### 5. Verify Setup
+```bash
+# Check cron jobs
+sudo crontab -l -u ctf
+
+# Check logs
+tail -f /var/log/ctf-packet-sender.log
+```
+
 ## Usage
 
-### Start the Main Packet Sender
-```bash
-sudo systemctl start ctf-packet-sender
-```
-
-### Start Noise Generator (on distraction servers)
-```bash
-sudo systemctl start ctf-noise-generator
-```
+### Automatic Operation (Cron Jobs)
+The scripts run automatically via cron jobs:
+- **Packet sender**: Every 2 minutes (flag only when admin logged in)
+- **Noise generator**: Every minute (optional distraction)
 
 ### Manual Testing
 ```bash
@@ -71,6 +76,12 @@ sudo -u ctf python3 /opt/ctf-lab/packet_sender.py
 
 # Test noise generator
 sudo -u ctf python3 /opt/ctf-lab/noise_generator.py
+```
+
+### Check Logs
+```bash
+tail -f /var/log/ctf-packet-sender.log
+tail -f /var/log/ctf-noise-generator.log
 ```
 
 ## Wireshark Analysis Guide

@@ -27,39 +27,17 @@ cp noise_generator.py /opt/ctf-lab/
 chown -R ctf:ctf /opt/ctf-lab/
 chmod +x /opt/ctf-lab/*.py
 
-# Setup systemd service
-echo "Setting up systemd service..."
-cat > /etc/systemd/system/ctf-packet-sender.service << EOF
-[Unit]
-Description=CTF Packet Sender Service
-After=network.target
-
-[Service]
-Type=simple
-User=ctf
-ExecStart=/usr/bin/python3 /opt/ctf-lab/packet_sender.py
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
+# Setup cron job for conditional flag sending
+echo "Setting up cron job for conditional packet sending..."
+cat > /etc/cron.d/ctf-packet-sender << EOF
+# CTF Packet Sender - runs every 2 minutes, sends flag only when admin logged in
+*/2 * * * * ctf /usr/bin/python3 /opt/ctf-lab/packet_sender.py >> /var/log/ctf-packet-sender.log 2>&1
 EOF
 
-# Setup noise generator service (optional)
-cat > /etc/systemd/system/ctf-noise-generator.service << EOF
-[Unit]
-Description=CTF Noise Generator Service
-After=network.target
-
-[Service]
-Type=simple
-User=ctf
-ExecStart=/usr/bin/python3 /opt/ctf-lab/noise_generator.py
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
+# Setup noise generator cron job (optional)
+cat > /etc/cron.d/ctf-noise-generator << EOF
+# CTF Noise Generator - runs every minute for distraction
+* * * * * ctf /usr/bin/python3 /opt/ctf-lab/noise_generator.py >> /var/log/ctf-noise-generator.log 2>&1
 EOF
 
 # Firewall configuration
@@ -79,16 +57,22 @@ systemctl restart ssh
 echo "Enabling automatic updates..."
 dpkg-reconfigure --frontend=noninteractive unattended-upgrades
 
-# Enable services
-echo "Enabling services..."
-systemctl daemon-reload
-systemctl enable ctf-packet-sender
-# systemctl enable ctf-noise-generator  # Uncomment if you want noise on this server too
+# Enable cron and create log files
+echo "Enabling cron and setting up logging..."
+systemctl enable cron
+systemctl start cron
+touch /var/log/ctf-packet-sender.log /var/log/ctf-noise-generator.log
+chown ctf:ctf /var/log/ctf-packet-sender.log /var/log/ctf-noise-generator.log
 
 echo "=== Setup Complete ==="
-echo "To start the packet sender: sudo systemctl start ctf-packet-sender"
-echo "To start noise generator: sudo systemctl start ctf-noise-generator"
-echo "To check status: sudo systemctl status ctf-packet-sender"
+echo "Cron jobs are now active:"
+echo "  - Packet sender runs every 2 minutes (flag only when admin logged in)"
+echo "  - Noise generator runs every minute (optional)"
 echo ""
+echo "To check logs:"
+echo "  tail -f /var/log/ctf-packet-sender.log"
+echo "  tail -f /var/log/ctf-noise-generator.log"
+echo ""
+echo "To modify admin users, edit the admin_users list in packet_sender.py"
 echo "Make sure to add your SSH public key to /home/ctf/.ssh/authorized_keys"
 echo "for passwordless login as the ctf user."

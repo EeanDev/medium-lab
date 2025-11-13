@@ -19,12 +19,12 @@ COMMON_PORTS = [53, 80, 23]  # DNS, HTTP, Telnet
 
 # Context-aware flags for confusion
 CONTEXT_FLAGS = {
-    "dns": ["FLAG{DNSServer}", "FLAG{DomainLookup}", "FLAG{NameResolution}"],
-    "http": ["FLAG{HTTP-Requests}", "FLAG{WebServer}", "FLAG{GetRequest}"],
-    "telnet": ["FLAG{LetMeIN}", "FLAG{TelnetAccess}", "FLAG{RemoteShell}"],
-    "tcp": ["FLAG{PortScan}", "FLAG{TCPConnection}", "FLAG{SYNflood}"],
-    "udp": ["FLAG{UDPStream}", "FLAG{DatagramFlow}", "FLAG{UDPFlood}"],
-    "ping": ["FLAG{ICMPFlood}", "FLAG{PingPong}", "FLAG{EchoRequest}"],
+    "dns": ["FLAG{DNSServer}", "FLAG{DomainLookup}", "FLAG{NameResolution}", "FLAG{YouStillDidn'tFindMe-2025}"],
+    "http": ["FLAG{HTTP-Requests}", "FLAG{WebServer}", "FLAG{GetRequest}", "FLAG{UMAKITSO-2024}"],
+    "telnet": ["FLAG{LetMeIN}", "FLAG{TelnetAccess}", "FLAG{RemoteShell}", "FLAG{decoy-2025}"],
+    "tcp": ["FLAG{PortScan}", "FLAG{TCPConnection}", "FLAG{SYNflood}", "FLAG{UMAKITSO-2023}"],
+    "udp": ["FLAG{UDPStream}", "FLAG{DatagramFlow}", "FLAG{UDPFlood}", "FLAG{Isthisme?No}"],
+    "ping": ["FLAG{ICMPFlood}", "FLAG{PingPong}", "FLAG{EchoRequest}", "FLAG{HAHAHAHA}"],
     "real": "FLAG{YouFoundMe-2025}"
 }
 
@@ -140,9 +140,64 @@ def send_fake_flag_packet(ip, port, context):
     except Exception as e:
         print(f"Error sending fake flag to {ip}:{port}: {e}")
 
+def is_admin_logged_in():
+    """Check if admin users are currently logged in"""
+    try:
+        result = subprocess.run(['who'], capture_output=True, text=True, timeout=5)
+        admin_users = ['root']  # Add your admin usernames here
+        for line in result.stdout.split('\n'):
+            if line.strip():
+                user = line.split()[0]
+                if user in admin_users:
+                    return True
+        return False
+    except Exception as e:
+        print(f"Error checking admin login: {e}")
+        return False
+
+def send_noise_only():
+    """Send only noise packets (no real flag)"""
+    noise_ip = generate_random_ip(SUBNET)
+
+    # Cycle through different packet types with fake flags
+    packet_type = random.choice(['ping', 'dns', 'http', 'telnet', 'tcp', 'udp'])
+
+    if packet_type == 'ping':
+        send_ping(noise_ip)
+        # Sometimes send fake ping flag
+        if random.random() < 0.3:
+            send_fake_flag_packet(noise_ip, generate_random_port(), 'ping')
+    elif packet_type == 'dns':
+        send_dns_query(noise_ip)
+        # Sometimes send fake DNS flag
+        if random.random() < 0.3:
+            send_fake_flag_packet(noise_ip, 53, 'dns')
+    elif packet_type == 'http':
+        send_http_request(noise_ip)
+        # Sometimes send fake HTTP flag
+        if random.random() < 0.3:
+            send_fake_flag_packet(noise_ip, 80, 'http')
+    elif packet_type == 'telnet':
+        send_telnet_attempt(noise_ip)
+        # Sometimes send fake telnet flag
+        if random.random() < 0.3:
+            send_fake_flag_packet(noise_ip, 23, 'telnet')
+    elif packet_type == 'tcp':
+        port = generate_random_port()
+        send_tcp_packet(noise_ip, port)
+        # Sometimes send fake TCP flag
+        if random.random() < 0.3:
+            send_fake_flag_packet(noise_ip, port, 'tcp')
+    elif packet_type == 'udp':
+        port = generate_random_port()
+        send_udp_packet(noise_ip, port)
+        # Sometimes send fake UDP flag
+        if random.random() < 0.3:
+            send_fake_flag_packet(noise_ip, port, 'udp')
+
 def main():
     print("Starting Packet Sender for CTF Lab...")
-    print(f"Flag: {FLAG}")
+    print("Flag will only be sent when admin users are logged in")
     print("Press Ctrl+C to stop")
 
     # Select random port for flag (fixed for this session)
@@ -154,51 +209,22 @@ def main():
     try:
         while True:
             current_time = time.time()
+            admin_logged_in = is_admin_logged_in()
 
-            # Send flag every 5 seconds
-            if current_time - last_flag_time >= FLAG_INTERVAL:
-                flag_ip = generate_random_ip(SUBNET)
-                send_flag_packet(flag_ip, flag_port)
-                last_flag_time = current_time
+            if admin_logged_in:
+                print("Admin logged in - sending flag + noise")
+                # Send flag every 5 seconds when admin is online
+                if current_time - last_flag_time >= FLAG_INTERVAL:
+                    flag_ip = generate_random_ip(SUBNET)
+                    send_flag_packet(flag_ip, flag_port)
+                    last_flag_time = current_time
+            else:
+                print("No admin logged in - sending noise only")
+                # Reset flag timer when admin logs out
+                last_flag_time = 0
 
-            # Send noise packets more frequently
-            noise_ip = generate_random_ip(SUBNET)
-
-            # Cycle through different packet types with fake flags
-            packet_type = random.choice(['ping', 'dns', 'http', 'telnet', 'tcp', 'udp'])
-
-            if packet_type == 'ping':
-                send_ping(noise_ip)
-                # Sometimes send fake ping flag
-                if random.random() < 0.3:
-                    send_fake_flag_packet(noise_ip, generate_random_port(), 'ping')
-            elif packet_type == 'dns':
-                send_dns_query(noise_ip)
-                # Sometimes send fake DNS flag
-                if random.random() < 0.3:
-                    send_fake_flag_packet(noise_ip, 53, 'dns')
-            elif packet_type == 'http':
-                send_http_request(noise_ip)
-                # Sometimes send fake HTTP flag
-                if random.random() < 0.3:
-                    send_fake_flag_packet(noise_ip, 80, 'http')
-            elif packet_type == 'telnet':
-                send_telnet_attempt(noise_ip)
-                # Sometimes send fake telnet flag
-                if random.random() < 0.3:
-                    send_fake_flag_packet(noise_ip, 23, 'telnet')
-            elif packet_type == 'tcp':
-                port = generate_random_port()
-                send_tcp_packet(noise_ip, port)
-                # Sometimes send fake TCP flag
-                if random.random() < 0.3:
-                    send_fake_flag_packet(noise_ip, port, 'tcp')
-            elif packet_type == 'udp':
-                port = generate_random_port()
-                send_udp_packet(noise_ip, port)
-                # Sometimes send fake UDP flag
-                if random.random() < 0.3:
-                    send_fake_flag_packet(noise_ip, port, 'udp')
+            # Always send noise packets
+            send_noise_only()
 
             time.sleep(NOISE_INTERVAL)
 
