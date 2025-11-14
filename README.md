@@ -14,6 +14,7 @@ This project creates a realistic CTF challenge where participants must analyze n
 - `packet_sender.py` - Main script that sends the real flag + noise
 - `noise_generator.py` - Noise-only script for distraction servers
 - `setup.sh` - Ubuntu server setup and hardening script
+- `reset.sh` - Complete cleanup script to remove all CTF components
 - `README.md` - This documentation
 
 ## Setup Instructions
@@ -56,11 +57,30 @@ sudo -u ctf chmod 600 /home/ctf/.ssh/authorized_keys
 ### 5. Verify Setup
 ```bash
 # Check cron jobs
-sudo crontab -l -u ctf
+sudo crontab -l
 
 # Check logs
 tail -f /var/log/ctf-packet-sender.log
 ```
+
+## Reset/Cleanup
+
+To completely remove all CTF lab components and start fresh:
+
+```bash
+sudo ./reset.sh
+```
+
+This will:
+- Remove all cron jobs
+- Stop and remove systemd services
+- Delete CTF files and directories
+- Remove log files
+- Delete the CTF user (if exists)
+- Reset firewall to defaults
+- Optionally remove installed packages
+
+After running reset.sh, you can run setup.sh for a fresh installation.
 
 ## Usage
 
