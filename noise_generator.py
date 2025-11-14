@@ -13,7 +13,7 @@ import sys
 # Configuration
 SUBNET = "172.16.200"
 TEST_IP = "172.16.120.11"  # Kali testing IP
-NOISE_INTERVAL = 5  # 5 seconds between IPs (reduced noise)
+NOISE_INTERVAL = 2  # 2 seconds between IPs
 COMMON_PORTS = [53, 80, 23, 22, 443]
 
 # Fake flags for maximum confusion

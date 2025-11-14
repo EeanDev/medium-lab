@@ -5,9 +5,9 @@ A Python-based packet sender for Capture The Flag (CTF) labs that hides the real
 ## Overview
 
 This project creates a realistic CTF challenge where participants must analyze network traffic to find a hidden flag. The system sends packets sequentially to all IPs in the subnet:
-- **Real flag**: `FLAG{YouFoundMe-2025}` to a random UDP port, sent to each IP every 5 seconds (only when admin logged in)
-- **Fake flags**: Context-aware fake flags (like `FLAG{HTTP-Requests}`, `FLAG{LetMeIN}`, etc.) to create confusion
-- **Noise traffic**: Various protocol packets (DNS, HTTP, Telnet, TCP, UDP, ICMP) sent to each IP every 1 second
+- **Real flag**: `FLAG{nahanapmo}` to a random UDP port, sent to each IP every 5 seconds (only when admin logged in)
+- **Fake flags**: Confusing fake flags (like `FLAG{ThisIsNotMe}`, `FLAG{TryAgain}`, `FLAG{SORRY}`, etc.) to create confusion
+- **Noise traffic**: Simple packets (TCP, UDP, ping) sent to each IP every 2 seconds
 
 ## Files
 
@@ -114,13 +114,13 @@ tail -f /var/log/ctf-noise-generator.log
    ```
 
 2. **Look for patterns**:
-   - Real flag: `FLAG{YouFoundMe-2025}` appears every 5 seconds
-   - Fake flags: Various `FLAG{...}` strings appear randomly
+   - Real flag: `FLAG{nahanapmo}` appears every 5 seconds
+   - Fake flags: Various confusing `FLAG{...}` strings appear randomly
    - Real flag goes to a **random high port** (1024-65535)
    - Fake flags go to common ports or random ports
 
 3. **Identify the flag port**:
-   - Find UDP packets containing `FLAG{YouFoundMe-2025}`
+   - Find UDP packets containing `FLAG{nahanapmo}`
    - Note the destination port - this is the flag port
    - Filter by this port: `udp.port == [flag_port]`
 
@@ -138,12 +138,12 @@ tail -f /var/log/ctf-noise-generator.log
 - **UDP**: Datagrams with "noise" payload to random ports
 
 ### Fake Flag Examples
-- `FLAG{HTTP-Requests}` - Sent with HTTP traffic
-- `FLAG{LetMeIN}` - Sent with Telnet traffic
-- `FLAG{AlahuAkbar}` - Random fake flag
-- `FLAG{DNSServer}` - Sent with DNS queries
-- `FLAG{PortScan}` - Sent with TCP scans
-- `FLAG{ICMPFlood}` - Sent with ping floods
+- `FLAG{ThisIsNotMe}` - DNS-related fake
+- `FLAG{SORRY}` - HTTP-related fake
+- `FLAG{FLAGGOT}` - Telnet-related fake
+- `FLAG{WrongOne}` - TCP-related fake
+- `FLAG{CloseButNo}` - UDP-related fake
+- `FLAG{NoFlagHere}` - Ping-related fake
 
 ## Configuration
 
@@ -152,8 +152,8 @@ Edit the scripts to customize:
 ### Flag Settings
 ```python
 CONTEXT_FLAGS = {
-    "real": "FLAG{YouFoundMe-2025}",  # Change this
-    "dns": ["FLAG{DNSServer}", "FLAG{DomainLookup}"],  # Add more fakes
+    "real": "FLAG{nahanapmo}",  # Change this
+    "dns": ["FLAG{ThisIsNotMe}", "FLAG{TryAgain}"],  # Add more fakes
     # ...
 }
 ```
@@ -193,14 +193,14 @@ sudo chmod +x /opt/ctf-lab/*.py
 ```
 
 ### Network issues
-- Ensure the target subnet `172.16.130.0/24` is reachable
+- Ensure the target subnet `172.16.200.0/24` is reachable
 - Check firewall rules: `sudo ufw status`
-- Test connectivity: `ping 172.16.130.1`
+- Test connectivity: `ping 172.16.200.1`
 
 ## Deployment Architecture
 
 ```
-CTF Network (172.16.130.0/24)
+CTF Network (172.16.200.0/24)
 ├── Flag Server (runs packet_sender.py)
 │   ├── Sends real flag every 5s to random port
 │   ├── Sends noise traffic + fake flags

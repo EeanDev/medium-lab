@@ -15,18 +15,18 @@ import sys
 SUBNET = "172.16.200"
 TEST_IP = "172.16.120.11"  # Kali testing IP
 FLAG_INTERVAL = 5  # seconds between IPs for flag
-NOISE_INTERVAL = 5  # seconds between IPs for noise (reduced noise)
+NOISE_INTERVAL = 2  # seconds between IPs for noise
 COMMON_PORTS = [53, 80, 23]  # DNS, HTTP, Telnet
 
-# Context-aware messages (only real flag contains "FLAG")
+# Fake FLAG messages for confusion + real flag
 CONTEXT_FLAGS = {
-    "dns": ["DNS-Server", "Name-Resolution"],
-    "http": ["HTTP-Requests", "Web-Traffic"],
-    "telnet": ["Telnet-Login", "Remote-Access"],
-    "tcp": ["TCP-Scan", "Port-Probe"],
-    "udp": ["UDP-Stream", "Data-Flow"],
-    "ping": ["ICMP-Flood", "Ping-Storm"],
-    "real": "FLAG{YouFoundMe-2025}"
+    "dns": ["FLAG{ThisIsNotMe}", "FLAG{TryAgain}"],
+    "http": ["FLAG{SORRY}", "FLAG{NotTheFlag}"],
+    "telnet": ["FLAG{FLAGGOT}", "FLAG{NiceTry}"],
+    "tcp": ["FLAG{WrongOne}", "FLAG{KeepLooking}"],
+    "udp": ["FLAG{CloseButNo}", "FLAG{GettingWarmer}"],
+    "ping": ["FLAG{NoFlagHere}", "FLAG{DeadEnd}"],
+    "real": "FLAG{nahanapmo}"
 }
 
 def generate_all_ips(subnet):
