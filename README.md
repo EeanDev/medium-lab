@@ -8,7 +8,6 @@ This project creates a realistic CTF challenge where participants must analyze n
 - **Real flag**: `$flag{nahanapmo}` sent via UDP every 5 seconds (only when admin logged in)
 - **Fake flags**: 12 confusing FLAG messages sent via ICMP/UDP to create confusion
 - **Noise traffic**: TCP/UDP/ping packets sent by separate noise generator
-- **Special IP**: 172.16.130.33 receives unusual traffic volume
 
 ## Files
 
@@ -111,8 +110,8 @@ tail -f /var/log/ctf-noise-generator.log
 
 **Network:** 172.16.200.0/24 + 172.16.120.11
 
-1. **Which particular IP address has an unusual number of traffic being sent to your network 172.16.200.0/24?**
-   `172.16.130.33`
+1. **Which IP address is sending unusual packet/noise traffic to the network 172.16.200.0/24?**
+   `[CTF_Server_IP]`
 
 2. **Find your flag present hidden within the messages.**
    `FLAG{nahanapmo}`

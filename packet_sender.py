@@ -193,7 +193,6 @@ def main():
     print("Starting Packet Sender for CTF Lab...")
     print("Flag will only be sent when admin users are logged in")
     print("Sending flags only (ICMP/UDP) - no noise from this script")
-    print("Special IP 172.16.130.33 gets unusual traffic")
     print("Press Ctrl+C to stop")
 
     # Generate list of all IPs in subnet
@@ -204,8 +203,6 @@ def main():
     flag_port = generate_random_port(exclude_common=True)
     print(f"Flag will be sent to random port: {flag_port}")
 
-    # Special IP that gets unusual traffic
-    SPECIAL_IP = "172.16.130.33"
     last_flag_time = 0
 
     try:
@@ -215,10 +212,6 @@ def main():
 
             # Randomly select IP for this cycle
             target_ip = get_random_ip(all_ips)
-
-            # Special IP gets 3x more chance of being selected
-            if random.random() < 0.3:  # 30% chance to override with special IP
-                target_ip = SPECIAL_IP
 
             if admin_logged_in:
                 print(f"Admin logged in - sending flags to IP {target_ip}")
