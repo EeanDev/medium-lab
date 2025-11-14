@@ -14,30 +14,27 @@ apt update && apt upgrade -y
 echo "Installing required packages..."
 apt install -y netcat-openbsd python3 python3-pip ufw fail2ban unattended-upgrades curl wget
 
-# Create CTF user
-echo "Creating ctf user..."
-useradd -m -s /bin/bash ctf || echo "User ctf already exists"
+# Create CTF directory
+echo "Creating CTF directory..."
 mkdir -p /opt/ctf-lab
-chown ctf:ctf /opt/ctf-lab
 
 # Copy scripts
 echo "Copying scripts to /opt/ctf-lab/..."
 cp packet_sender.py /opt/ctf-lab/
 cp noise_generator.py /opt/ctf-lab/
-chown -R ctf:ctf /opt/ctf-lab/
 chmod +x /opt/ctf-lab/*.py
 
 # Setup cron job for conditional flag sending
 echo "Setting up cron job for conditional packet sending..."
 cat > /etc/cron.d/ctf-packet-sender << EOF
 # CTF Packet Sender - runs every 2 minutes, sends flag only when admin logged in
-*/2 * * * * ctf /usr/bin/python3 /opt/ctf-lab/packet_sender.py >> /var/log/ctf-packet-sender.log 2>&1
+*/2 * * * * root /usr/bin/python3 /opt/ctf-lab/packet_sender.py >> /var/log/ctf-packet-sender.log 2>&1
 EOF
 
 # Setup noise generator cron job (optional)
 cat > /etc/cron.d/ctf-noise-generator << EOF
 # CTF Noise Generator - runs every minute for distraction
-* * * * * ctf /usr/bin/python3 /opt/ctf-lab/noise_generator.py >> /var/log/ctf-noise-generator.log 2>&1
+* * * * * root /usr/bin/python3 /opt/ctf-lab/noise_generator.py >> /var/log/ctf-noise-generator.log 2>&1
 EOF
 
 # Firewall configuration
@@ -62,7 +59,6 @@ echo "Enabling cron and setting up logging..."
 systemctl enable cron
 systemctl start cron
 touch /var/log/ctf-packet-sender.log /var/log/ctf-noise-generator.log
-chown ctf:ctf /var/log/ctf-packet-sender.log /var/log/ctf-noise-generator.log
 
 echo "=== Setup Complete ==="
 echo "Cron jobs are now active:"
@@ -74,5 +70,4 @@ echo "  tail -f /var/log/ctf-packet-sender.log"
 echo "  tail -f /var/log/ctf-noise-generator.log"
 echo ""
 echo "To modify admin users, edit the admin_users list in packet_sender.py"
-echo "Make sure to add your SSH public key to /home/ctf/.ssh/authorized_keys"
-echo "for passwordless login as the ctf user."
+echo "Scripts run as root via cron jobs."

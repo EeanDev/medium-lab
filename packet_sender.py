@@ -19,12 +19,12 @@ COMMON_PORTS = [53, 80, 23]  # DNS, HTTP, Telnet
 
 # Context-aware flags for confusion
 CONTEXT_FLAGS = {
-    "dns": ["{DNSServer}", "FLAG{YouStillDidn'tFindMe-2025}"],
-    "http": ["{HTTP-Requests}", "WEB WEB WEB"],
-    "telnet": ["LetMeIN", "Issue Telnet"],
-    "tcp": ["{PortScan}", "HELLO"],
-    "udp": ["{UDPStream}", "Isthisme? No"],
-    "ping": ["{ICMPFlood}", "FLAG{HAHAHAHA}"],
+    "dns": ["FLAG{DNSServer}", "FLAG{DomainLookup}"],
+    "http": ["FLAG{HTTP-Requests}", "FLAG{WebServer}"],
+    "telnet": ["FLAG{LetMeIN}", "FLAG{TelnetAccess}"],
+    "tcp": ["FLAG{PortScan}", "FLAG{TCPConnection}"],
+    "udp": ["FLAG{UDPStream}", "FLAG{DatagramFlow}"],
+    "ping": ["FLAG{ICMPFlood}", "FLAG{PingPong}"],
     "real": "FLAG{YouFoundMe-2025}"
 }
 
