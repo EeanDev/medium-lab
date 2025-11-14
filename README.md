@@ -4,10 +4,11 @@ A Python-based packet sender for Capture The Flag (CTF) labs that hides the real
 
 ## Overview
 
-This project creates a realistic CTF challenge where participants must analyze network traffic to find a hidden flag. The system sends packets randomly to IPs in the subnet for fair distribution:
-- **Real flag**: `$flag{nahanapmo}` to a random UDP port, sent to random IPs every 5 seconds (only when admin logged in)
-- **Fake flags**: Confusing fake flags (like `FLAG{ThisIsNotMe}`, `FLAG{TryAgain}`, `FLAG{SORRY}`, etc.) to create confusion
-- **Noise traffic**: Simple packets (TCP, UDP, ping) sent to random IPs every 2 seconds
+This project creates a realistic CTF challenge where participants must analyze network traffic to find a hidden flag. The system sends packets randomly to IPs in the subnet:
+- **Real flag**: `$flag{nahanapmo}` sent via UDP every 5 seconds (only when admin logged in)
+- **Fake flags**: 12 confusing FLAG messages sent via ICMP/UDP to create confusion
+- **Noise traffic**: TCP/UDP/ping packets sent by separate noise generator
+- **Special IP**: 172.16.130.33 receives unusual traffic volume
 
 ## Files
 
@@ -104,46 +105,60 @@ tail -f /var/log/ctf-packet-sender.log
 tail -f /var/log/ctf-noise-generator.log
 ```
 
+## CTF Challenge Questions
+
+### Medium Level Network Forensics Challenge
+
+**Network:** 172.16.200.0/24 + 172.16.120.11
+
+1. **Which particular IP address has an unusual number of traffic being sent to your network 172.16.200.0/24?**
+   `172.16.130.33`
+
+2. **Find your flag present hidden within the messages.**
+   `FLAG{nahanapmo}`
+
+3. **What is the exact time interval between the appearance of the flag present? (Number only)**
+   `5`
+
+4. **How many unique FLAG messages do you see in the traffic? (Sum only)**
+   `13`
+
+5. **What are the protocols used to send the messages? Use comma(,) to separate.**
+   `UDP,ICMP`
+
+6. **What do you call the opposite of the source port pattern being used to send the messages?**
+   `Well-known ports/Common Ports`
+
 ## Wireshark Analysis Guide
 
 ### Finding the Real Flag
 
 1. **Filter for FLAG strings**:
-   ```
-   udp contains "FLAG"
-   ```
+```
+udp contains "flag" or icmp contains "flag"
+```
 
 2. **Look for patterns**:
-   - Real flag: `FLAG{nahanapmo}` appears every 5 seconds
-   - Fake flags: Various confusing `FLAG{...}` strings appear randomly
-   - Real flag goes to a **random high port** (1024-65535)
-   - Fake flags go to common ports or random ports
+   - Real flag: `$flag{nahanapmo}` appears every 5 seconds
+   - Fake flags: Various `FLAG{...}` strings appear randomly
+   - Special IP: `172.16.130.33` gets unusual traffic
+   - Protocols: Only UDP and ICMP contain FLAG messages
 
-3. **Identify the flag port**:
-   - Find UDP packets containing `FLAG{nahanapmo}`
-   - Note the destination port - this is the flag port
-   - Filter by this port: `udp.port == [flag_port]`
+3. **Identify the flag**:
+   - Look for the unique `$flag{...}` format (not `FLAG{...}`)
+   - Check timing: exactly 5-second intervals
+   - Verify protocols: UDP and ICMP only
 
-4. **Timing analysis**:
-   - Real flag: Exactly every 5 seconds
-   - Fake flags: Random timing
+### Traffic Patterns
 
-### Noise Traffic Patterns
+- **FLAG Messages**: Only in UDP and ICMP packets (13 unique messages)
+- **Noise Traffic**: TCP, UDP, ping from noise generator
+- **Special IP**: 172.16.130.33 receives 3x more traffic
+- **Timing**: Flags every 5 seconds, noise every 2 seconds
 
-- **ICMP/Ping**: Echo requests to random IPs
-- **DNS**: Queries for various domains to random IPs on port 53
-- **HTTP**: GET/POST requests to random IPs on port 80
-- **Telnet**: Connection attempts to random IPs on port 23
-- **TCP**: SYN packets with "noise" payload to random ports
-- **UDP**: Datagrams with "noise" payload to random ports
-
-### Fake Flag Examples
-- `FLAG{ThisIsNotMe}` - DNS-related fake
-- `FLAG{SORRY}` - HTTP-related fake
-- `FLAG{FLAGGOT}` - Telnet-related fake
-- `FLAG{WrongOne}` - TCP-related fake
-- `FLAG{CloseButNo}` - UDP-related fake
-- `FLAG{NoFlagHere}` - Ping-related fake
+### Message Examples
+- Real: `$flag{nahanapmo}`
+- Fake: `FLAG{ThisIsNotMe}`, `FLAG{SORRY}`, `FLAG{FLAGGOT}`, etc.
 
 ## Configuration
 

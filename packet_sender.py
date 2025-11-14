@@ -120,14 +120,14 @@ def send_telnet_attempt(ip):
         print(f"Error sending Telnet to {ip}:23: {e}")
 
 def send_flag_packet(ip, port):
-    """Send flag packet to random port"""
+    """Send flag packet to random port (UDP only for visibility)"""
     try:
         flag = CONTEXT_FLAGS["real"]
         proc = subprocess.run(['echo', flag],
                             stdout=subprocess.PIPE)
         result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
                               input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        print(f"*** SENT REAL FLAG TO {ip}:{port} ***")
+        print(f"*** SENT REAL FLAG TO {ip}:{port} via UDP ***")
     except subprocess.TimeoutExpired:
         print(f"Flag send to {ip}:{port} timed out")
     except Exception as e:
@@ -162,24 +162,38 @@ def is_admin_logged_in():
         print(f"Error checking admin login: {e}")
         return False
 
-def send_noise_only(ip):
-    """Send only noise packets to specific IP (no real flag)"""
-    # Reduced noise: only TCP, UDP, and occasional ping
-    packet_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])  # Weighted toward TCP/UDP
+def send_fake_flag_packet(ip, context):
+    """Send fake flag packet for confusion (only ICMP and UDP)"""
+    try:
+        fake_flag = random.choice(CONTEXT_FLAGS[context])
+        packet_type = random.choice(['icmp', 'udp'])  # Only ICMP and UDP for flags
 
-    if packet_type == 'ping':
-        send_ping(ip)
-    elif packet_type == 'tcp':
-        port = generate_random_port()
-        send_tcp_packet(ip, port)
-    elif packet_type == 'udp':
-        port = generate_random_port()
-        send_udp_packet(ip, port)
+        if packet_type == 'icmp':
+            # Send ICMP ping with flag as data (using hping3 if available, fallback to echo)
+            try:
+                proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+            except:
+                # Fallback: just send UDP
+                proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+        else:  # UDP
+            proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+        print(f"Sent fake flag '{fake_flag}' to {ip} via {packet_type.upper()}")
+    except subprocess.TimeoutExpired:
+        print(f"Fake flag send to {ip} timed out")
+    except Exception as e:
+        print(f"Error sending fake flag to {ip}: {e}")
 
 def main():
     print("Starting Packet Sender for CTF Lab...")
     print("Flag will only be sent when admin users are logged in")
-    print("Random IP selection: fair distribution to all IPs")
+    print("Sending flags only (ICMP/UDP) - no noise from this script")
+    print("Special IP 172.16.130.33 gets unusual traffic")
     print("Press Ctrl+C to stop")
 
     # Generate list of all IPs in subnet
@@ -190,6 +204,8 @@ def main():
     flag_port = generate_random_port(exclude_common=True)
     print(f"Flag will be sent to random port: {flag_port}")
 
+    # Special IP that gets unusual traffic
+    SPECIAL_IP = "172.16.130.33"
     last_flag_time = 0
 
     try:
@@ -197,23 +213,28 @@ def main():
             current_time = time.time()
             admin_logged_in = is_admin_logged_in()
 
-            # Randomly select IPs for this cycle (fair distribution)
-            noise_ip = get_random_ip(all_ips)
-            flag_ip = get_random_ip(all_ips)
+            # Randomly select IP for this cycle
+            target_ip = get_random_ip(all_ips)
+
+            # Special IP gets 3x more chance of being selected
+            if random.random() < 0.3:  # 30% chance to override with special IP
+                target_ip = SPECIAL_IP
 
             if admin_logged_in:
-                print(f"Admin logged in - sending to IP {noise_ip}")
+                print(f"Admin logged in - sending flags to IP {target_ip}")
                 # Send flag every 5 seconds to random IP when admin is online
                 if current_time - last_flag_time >= FLAG_INTERVAL:
-                    send_flag_packet(flag_ip, flag_port)
+                    send_flag_packet(target_ip, flag_port)
                     last_flag_time = current_time
+
+                # Send fake flags to create confusion (only ICMP/UDP)
+                contexts = ['dns', 'http', 'telnet', 'tcp', 'udp', 'ping']
+                for context in random.sample(contexts, random.randint(1, 3)):  # 1-3 fake flags per cycle
+                    send_fake_flag_packet(target_ip, context)
             else:
-                print(f"No admin logged in - noise only to IP {noise_ip}")
+                print(f"No admin logged in - no flag traffic")
                 # Reset flag timer when admin logs out
                 last_flag_time = 0
-
-            # Always send noise packets to random IP
-            send_noise_only(noise_ip)
 
             time.sleep(NOISE_INTERVAL)
 
