@@ -35,9 +35,9 @@ def generate_all_ips(subnet):
     ips.append(TEST_IP)  # Add test IP
     return ips
 
-def get_next_ip(ip_list, current_index):
-    """Get next IP in sequential order"""
-    return ip_list[current_index % len(ip_list)]
+def get_random_ip(ip_list):
+    """Get random IP from list for fair distribution"""
+    return random.choice(ip_list)
 
 def generate_random_port(exclude_common=False):
     """Generate random port between 1024-65535, optionally excluding common ports"""
@@ -179,7 +179,7 @@ def send_noise_only(ip):
 def main():
     print("Starting Packet Sender for CTF Lab...")
     print("Flag will only be sent when admin users are logged in")
-    print("Sequential IP sending: noise every 1s, flag every 5s per IP")
+    print("Random IP selection: fair distribution to all IPs")
     print("Press Ctrl+C to stop")
 
     # Generate list of all IPs in subnet
@@ -190,9 +190,6 @@ def main():
     flag_port = generate_random_port(exclude_common=True)
     print(f"Flag will be sent to random port: {flag_port}")
 
-    # IP cycling indices
-    noise_ip_index = 0
-    flag_ip_index = 0
     last_flag_time = 0
 
     try:
@@ -200,26 +197,23 @@ def main():
             current_time = time.time()
             admin_logged_in = is_admin_logged_in()
 
-            # Get current IPs for this cycle
-            noise_ip = get_next_ip(all_ips, noise_ip_index)
-            flag_ip = get_next_ip(all_ips, flag_ip_index)
+            # Randomly select IPs for this cycle (fair distribution)
+            noise_ip = get_random_ip(all_ips)
+            flag_ip = get_random_ip(all_ips)
 
             if admin_logged_in:
                 print(f"Admin logged in - sending to IP {noise_ip}")
-                # Send flag every 5 seconds to next IP when admin is online
+                # Send flag every 5 seconds to random IP when admin is online
                 if current_time - last_flag_time >= FLAG_INTERVAL:
                     send_flag_packet(flag_ip, flag_port)
-                    flag_ip_index += 1  # Move to next IP for flag
                     last_flag_time = current_time
             else:
                 print(f"No admin logged in - noise only to IP {noise_ip}")
-                # Reset flag timer and index when admin logs out
+                # Reset flag timer when admin logs out
                 last_flag_time = 0
-                flag_ip_index = 0
 
-            # Always send noise packets to next IP
+            # Always send noise packets to random IP
             send_noise_only(noise_ip)
-            noise_ip_index += 1  # Move to next IP for noise
 
             time.sleep(NOISE_INTERVAL)
 

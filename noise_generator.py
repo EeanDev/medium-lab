@@ -40,9 +40,9 @@ def generate_all_ips(subnet):
     ips.append(TEST_IP)  # Add test IP
     return ips
 
-def get_next_ip(ip_list, current_index):
-    """Get next IP in sequential order"""
-    return ip_list[current_index % len(ip_list)]
+def get_random_ip(ip_list):
+    """Get random IP from list for fair distribution"""
+    return random.choice(ip_list)
 
 def generate_random_port():
     """Generate random port between 1024-65535"""
@@ -120,7 +120,7 @@ def send_http_noise(ip):
 
 def main():
     print("Starting Noise Generator for CTF Confusion...")
-    print("Sequential IP sending: 1 IP per second")
+    print("Random IP selection: fair distribution to all IPs")
     print("Generating fake flags and noise traffic")
     print("Press Ctrl+C to stop")
 
@@ -128,13 +128,10 @@ def main():
     all_ips = generate_all_ips(SUBNET)
     print(f"Targeting {len(all_ips)} IPs in {SUBNET}.0/24 subnet")
 
-    # IP cycling index
-    ip_index = 0
-
     try:
         while True:
-            # Get next IP in sequence
-            ip = get_next_ip(all_ips, ip_index)
+            # Get random IP for fair distribution
+            ip = get_random_ip(all_ips)
 
             # Reduced noise: simple TCP/UDP/ping only
             noise_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])
@@ -150,7 +147,6 @@ def main():
                 data = random.choice(["noise", "data", "test"])
                 send_noise_udp(ip, port, data)
 
-            ip_index += 1  # Move to next IP
             time.sleep(NOISE_INTERVAL)
 
     except KeyboardInterrupt:

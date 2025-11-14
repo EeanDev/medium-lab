@@ -4,10 +4,10 @@ A Python-based packet sender for Capture The Flag (CTF) labs that hides the real
 
 ## Overview
 
-This project creates a realistic CTF challenge where participants must analyze network traffic to find a hidden flag. The system sends packets sequentially to all IPs in the subnet:
-- **Real flag**: `FLAG{nahanapmo}` to a random UDP port, sent to each IP every 5 seconds (only when admin logged in)
+This project creates a realistic CTF challenge where participants must analyze network traffic to find a hidden flag. The system sends packets randomly to IPs in the subnet for fair distribution:
+- **Real flag**: `$flag{nahanapmo}` to a random UDP port, sent to random IPs every 5 seconds (only when admin logged in)
 - **Fake flags**: Confusing fake flags (like `FLAG{ThisIsNotMe}`, `FLAG{TryAgain}`, `FLAG{SORRY}`, etc.) to create confusion
-- **Noise traffic**: Simple packets (TCP, UDP, ping) sent to each IP every 2 seconds
+- **Noise traffic**: Simple packets (TCP, UDP, ping) sent to random IPs every 2 seconds
 
 ## Files
 
