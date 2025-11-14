@@ -25,7 +25,7 @@ CONTEXT_FLAGS = {
     "telnet": ["FLAG{FLAGGOT}", "FLAG{NiceTry}"],
     "tcp": ["FLAG{WrongOne}", "FLAG{KeepLooking}"],
     "udp": ["FLAG{CloseButNo}", "FLAG{GettingWarmer}"],
-    "ping": ["FLAG{NoFlagHere}", "FLAG{DeadEnd}"],
+    "ping": ["FLAG{NoFlagHere}", "FLAG{NOPENOPE}"],
     "real": "FLAG{nahanapmo}"
 }
 
