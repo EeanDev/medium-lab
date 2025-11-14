@@ -13,7 +13,7 @@ import sys
 # Configuration
 SUBNET = "172.16.200"
 TEST_IP = "172.16.120.11"  # Kali testing IP
-NOISE_INTERVAL = 1  # 1 second between IPs
+NOISE_INTERVAL = 5  # 5 seconds between IPs (reduced noise)
 COMMON_PORTS = [53, 80, 23, 22, 443]
 
 # Fake flags for maximum confusion
@@ -136,33 +136,19 @@ def main():
             # Get next IP in sequence
             ip = get_next_ip(all_ips, ip_index)
 
-            # Randomly choose noise type
-            noise_type = random.choice([
-                'ping', 'tcp', 'udp', 'dns', 'http', 'fake_flag',
-                'ping', 'tcp', 'udp', 'fake_flag', 'fake_flag'  # Weighted for more fake flags
-            ])
+            # Reduced noise: simple TCP/UDP/ping only
+            noise_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])
 
             if noise_type == 'ping':
                 send_noise_ping(ip)
             elif noise_type == 'tcp':
-                port = random.choice(COMMON_PORTS + [generate_random_port()])
-                data = random.choice(["noise", "data", "test", "random" + str(random.randint(100,999))])
+                port = generate_random_port()
+                data = random.choice(["noise", "data", "test"])
                 send_noise_tcp(ip, port, data)
             elif noise_type == 'udp':
-                port = random.choice(COMMON_PORTS + [generate_random_port()])
-                data = random.choice(["noise", "data", "test", "random" + str(random.randint(100,999))])
+                port = generate_random_port()
+                data = random.choice(["noise", "data", "test"])
                 send_noise_udp(ip, port, data)
-            elif noise_type == 'dns':
-                send_dns_noise(ip)
-            elif noise_type == 'http':
-                send_http_noise(ip)
-            elif noise_type == 'fake_flag':
-                # Send fake flag to random port or common port
-                if random.random() < 0.7:
-                    port = generate_random_port()
-                else:
-                    port = random.choice(COMMON_PORTS)
-                send_fake_flag(ip, port)
 
             ip_index += 1  # Move to next IP
             time.sleep(NOISE_INTERVAL)

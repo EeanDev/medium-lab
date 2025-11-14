@@ -15,17 +15,17 @@ import sys
 SUBNET = "172.16.200"
 TEST_IP = "172.16.120.11"  # Kali testing IP
 FLAG_INTERVAL = 5  # seconds between IPs for flag
-NOISE_INTERVAL = 1  # seconds between IPs for noise
+NOISE_INTERVAL = 5  # seconds between IPs for noise (reduced noise)
 COMMON_PORTS = [53, 80, 23]  # DNS, HTTP, Telnet
 
-# Context-aware flags for confusion
+# Context-aware messages (only real flag contains "FLAG")
 CONTEXT_FLAGS = {
-    "dns": ["FLAG{DNSServer}", "FLAG{DomainLookup}"],
-    "http": ["FLAG{HTTP-Requests}", "FLAG{WebServer}"],
-    "telnet": ["FLAG{LetMeIN}", "FLAG{TelnetAccess}"],
-    "tcp": ["FLAG{PortScan}", "FLAG{TCPConnection}"],
-    "udp": ["FLAG{UDPStream}", "FLAG{DatagramFlow}"],
-    "ping": ["FLAG{ICMPFlood}", "FLAG{PingPong}"],
+    "dns": ["DNS-Server", "Name-Resolution"],
+    "http": ["HTTP-Requests", "Web-Traffic"],
+    "telnet": ["Telnet-Login", "Remote-Access"],
+    "tcp": ["TCP-Scan", "Port-Probe"],
+    "udp": ["UDP-Stream", "Data-Flow"],
+    "ping": ["ICMP-Flood", "Ping-Storm"],
     "real": "FLAG{YouFoundMe-2025}"
 }
 
@@ -164,41 +164,17 @@ def is_admin_logged_in():
 
 def send_noise_only(ip):
     """Send only noise packets to specific IP (no real flag)"""
-    # Cycle through different packet types with fake flags
-    packet_type = random.choice(['ping', 'dns', 'http', 'telnet', 'tcp', 'udp'])
+    # Reduced noise: only TCP, UDP, and occasional ping
+    packet_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])  # Weighted toward TCP/UDP
 
     if packet_type == 'ping':
         send_ping(ip)
-        # Sometimes send fake ping flag
-        if random.random() < 0.3:
-            send_fake_flag_packet(ip, generate_random_port(), 'ping')
-    elif packet_type == 'dns':
-        send_dns_query(ip)
-        # Sometimes send fake DNS flag
-        if random.random() < 0.3:
-            send_fake_flag_packet(ip, 53, 'dns')
-    elif packet_type == 'http':
-        send_http_request(ip)
-        # Sometimes send fake HTTP flag
-        if random.random() < 0.3:
-            send_fake_flag_packet(ip, 80, 'http')
-    elif packet_type == 'telnet':
-        send_telnet_attempt(ip)
-        # Sometimes send fake telnet flag
-        if random.random() < 0.3:
-            send_fake_flag_packet(ip, 23, 'telnet')
     elif packet_type == 'tcp':
         port = generate_random_port()
         send_tcp_packet(ip, port)
-        # Sometimes send fake TCP flag
-        if random.random() < 0.3:
-            send_fake_flag_packet(ip, port, 'tcp')
     elif packet_type == 'udp':
         port = generate_random_port()
         send_udp_packet(ip, port)
-        # Sometimes send fake UDP flag
-        if random.random() < 0.3:
-            send_fake_flag_packet(ip, port, 'udp')
 
 def main():
     print("Starting Packet Sender for CTF Lab...")
