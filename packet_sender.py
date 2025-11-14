@@ -26,7 +26,7 @@ CONTEXT_FLAGS = {
     "tcp": ["FLAG{WrongOne}", "FLAG{KeepLooking}"],
     "udp": ["FLAG{CloseButNo}", "FLAG{GettingWarmer}"],
     "ping": ["FLAG{NoFlagHere}", "FLAG{NOPENOPE}"],
-    "real": "FLAG{nahanapmo}"
+    "real": "$flag{nahanapmo}"
 }
 
 def generate_all_ips(subnet):
