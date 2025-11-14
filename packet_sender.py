@@ -56,7 +56,7 @@ def send_tcp_packet(ip, port, data="noise"):
         proc = subprocess.run(['echo', data],
                             stdout=subprocess.PIPE)
         result = subprocess.run(['nc', '-w', '1', ip, str(port)],
-                              input=proc.stdout, capture_output=True, text=True, timeout=2)
+                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
         print(f"Sent TCP packet to {ip}:{port}")
     except subprocess.TimeoutExpired:
         print(f"TCP connection to {ip}:{port} timed out")
@@ -69,7 +69,7 @@ def send_udp_packet(ip, port, data="noise"):
         proc = subprocess.run(['echo', data],
                             stdout=subprocess.PIPE)
         result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                              input=proc.stdout, capture_output=True, text=True, timeout=2)
+                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
         print(f"Sent UDP packet to {ip}:{port}")
     except subprocess.TimeoutExpired:
         print(f"UDP send to {ip}:{port} timed out")
@@ -94,7 +94,7 @@ def send_http_request(ip):
         proc = subprocess.run(['echo', '-e', http_request],
                             stdout=subprocess.PIPE)
         result = subprocess.run(['nc', '-w', '1', ip, '80'],
-                              input=proc.stdout, capture_output=True, text=True, timeout=2)
+                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
         print(f"Sent HTTP request to {ip}:80")
     except subprocess.TimeoutExpired:
         print(f"HTTP request to {ip}:80 timed out")
@@ -119,7 +119,7 @@ def send_flag_packet(ip, port):
         proc = subprocess.run(['echo', flag],
                             stdout=subprocess.PIPE)
         result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                              input=proc.stdout, capture_output=True, text=True, timeout=2)
+                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
         print(f"*** SENT REAL FLAG TO {ip}:{port} ***")
     except subprocess.TimeoutExpired:
         print(f"Flag send to {ip}:{port} timed out")
@@ -133,7 +133,7 @@ def send_fake_flag_packet(ip, port, context):
         proc = subprocess.run(['echo', fake_flag],
                             stdout=subprocess.PIPE)
         result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                              input=proc.stdout, capture_output=True, text=True, timeout=2)
+                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
         print(f"Sent fake flag '{fake_flag}' to {ip}:{port}")
     except subprocess.TimeoutExpired:
         print(f"Fake flag send to {ip}:{port} timed out")

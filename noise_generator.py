@@ -17,21 +17,20 @@ COMMON_PORTS = [53, 80, 23, 22, 443]
 
 # Fake flags for maximum confusion
 FAKE_FLAGS = [
-    "FLAG{HTTP-Requests}",
-    "FLAG{LetMeIN}",
-    "FLAG{AlahuAkbar}",
-    "FLAG{SystemHacked}",
-    "FLAG{BackdoorOpen}",
-    "FLAG{RootAccess}",
-    "FLAG{DataStolen}",
-    "FLAG{NetworkCompromised}",
-    "FLAG{DNSServer}",
-    "FLAG{WebServer}",
-    "FLAG{PortScan}",
-    "FLAG{ICMPFlood}",
-    "FLAG{UDPFlood}",
-    "FLAG{SYNflood}",
-    "FLAG{EchoRequest}"
+    "{HTTP-Requests}",
+    "{LetMeIN}",
+    "{AlahuAkbar}",
+    "{SystemHacked}",
+    "{BackdoorOpen}",
+    "{RootAccess}",
+    "{DataStolen}",
+    "{DNSServer}",
+    "{WebServer}",
+    "{PortScan}",
+    "{ICMPFlood}",
+    "{UDPFlood}",
+    "{SYNflood}",
+    "{EchoRequest}"
 ]
 
 def generate_random_ip(subnet):
