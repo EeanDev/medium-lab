@@ -11,8 +11,9 @@ import socket
 import sys
 
 # Configuration
-SUBNET = "172.16.130"
-NOISE_INTERVAL = 0.5  # Very frequent noise
+SUBNET = "172.16.200"
+TEST_IP = "172.16.120.11"  # Kali testing IP
+NOISE_INTERVAL = 1  # 1 second between IPs
 COMMON_PORTS = [53, 80, 23, 22, 443]
 
 # Fake flags for maximum confusion
@@ -33,9 +34,15 @@ FAKE_FLAGS = [
     "{EchoRequest}"
 ]
 
-def generate_random_ip(subnet):
-    """Generate random IP in the given subnet"""
-    return f"{subnet}.{random.randint(1, 254)}"
+def generate_all_ips(subnet):
+    """Generate list of all IPs in the subnet"""
+    ips = [f"{subnet}.{i}" for i in range(1, 255)]
+    ips.append(TEST_IP)  # Add test IP
+    return ips
+
+def get_next_ip(ip_list, current_index):
+    """Get next IP in sequential order"""
+    return ip_list[current_index % len(ip_list)]
 
 def generate_random_port():
     """Generate random port between 1024-65535"""
@@ -113,12 +120,21 @@ def send_http_noise(ip):
 
 def main():
     print("Starting Noise Generator for CTF Confusion...")
+    print("Sequential IP sending: 1 IP per second")
     print("Generating fake flags and noise traffic")
     print("Press Ctrl+C to stop")
 
+    # Generate list of all IPs in subnet
+    all_ips = generate_all_ips(SUBNET)
+    print(f"Targeting {len(all_ips)} IPs in {SUBNET}.0/24 subnet")
+
+    # IP cycling index
+    ip_index = 0
+
     try:
         while True:
-            ip = generate_random_ip(SUBNET)
+            # Get next IP in sequence
+            ip = get_next_ip(all_ips, ip_index)
 
             # Randomly choose noise type
             noise_type = random.choice([
@@ -148,6 +164,7 @@ def main():
                     port = random.choice(COMMON_PORTS)
                 send_fake_flag(ip, port)
 
+            ip_index += 1  # Move to next IP
             time.sleep(NOISE_INTERVAL)
 
     except KeyboardInterrupt:

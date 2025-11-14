@@ -4,10 +4,10 @@ A Python-based packet sender for Capture The Flag (CTF) labs that hides the real
 
 ## Overview
 
-This project creates a realistic CTF challenge where participants must analyze network traffic to find a hidden flag. The system sends:
-- **Real flag**: `FLAG{YouFoundMe-2025}` to a random UDP port every 5 seconds
+This project creates a realistic CTF challenge where participants must analyze network traffic to find a hidden flag. The system sends packets sequentially to all IPs in the subnet:
+- **Real flag**: `FLAG{YouFoundMe-2025}` to a random UDP port, sent to each IP every 5 seconds (only when admin logged in)
 - **Fake flags**: Context-aware fake flags (like `FLAG{HTTP-Requests}`, `FLAG{LetMeIN}`, etc.) to create confusion
-- **Noise traffic**: Various protocol packets (DNS, HTTP, Telnet, TCP, UDP, ICMP) at higher frequency
+- **Noise traffic**: Various protocol packets (DNS, HTTP, Telnet, TCP, UDP, ICMP) sent to each IP every 1 second
 
 ## Files
 
@@ -166,7 +166,8 @@ NOISE_INTERVAL = 1   # Noise frequency
 
 ### Network Range
 ```python
-SUBNET = "172.16.130"  # Target subnet
+SUBNET = "172.16.200"  # Target subnet (sequential IP sending)
+TEST_IP = "172.16.120.11"  # Additional test IP
 ```
 
 ## Security Notes

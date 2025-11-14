@@ -12,9 +12,10 @@ import socket
 import sys
 
 # Configuration
-SUBNET = "172.16.130"
-FLAG_INTERVAL = 5  # seconds
-NOISE_INTERVAL = 1  # seconds
+SUBNET = "172.16.200"
+TEST_IP = "172.16.120.11"  # Kali testing IP
+FLAG_INTERVAL = 5  # seconds between IPs for flag
+NOISE_INTERVAL = 1  # seconds between IPs for noise
 COMMON_PORTS = [53, 80, 23]  # DNS, HTTP, Telnet
 
 # Context-aware flags for confusion
@@ -28,9 +29,15 @@ CONTEXT_FLAGS = {
     "real": "FLAG{YouFoundMe-2025}"
 }
 
-def generate_random_ip(subnet):
-    """Generate random IP in the given subnet (e.g., 172.16.130.x)"""
-    return f"{subnet}.{random.randint(1, 254)}"
+def generate_all_ips(subnet):
+    """Generate list of all IPs in the subnet"""
+    ips = [f"{subnet}.{i}" for i in range(1, 255)]
+    ips.append(TEST_IP)  # Add test IP
+    return ips
+
+def get_next_ip(ip_list, current_index):
+    """Get next IP in sequential order"""
+    return ip_list[current_index % len(ip_list)]
 
 def generate_random_port(exclude_common=False):
     """Generate random port between 1024-65535, optionally excluding common ports"""
@@ -155,55 +162,61 @@ def is_admin_logged_in():
         print(f"Error checking admin login: {e}")
         return False
 
-def send_noise_only():
-    """Send only noise packets (no real flag)"""
-    noise_ip = generate_random_ip(SUBNET)
-
+def send_noise_only(ip):
+    """Send only noise packets to specific IP (no real flag)"""
     # Cycle through different packet types with fake flags
     packet_type = random.choice(['ping', 'dns', 'http', 'telnet', 'tcp', 'udp'])
 
     if packet_type == 'ping':
-        send_ping(noise_ip)
+        send_ping(ip)
         # Sometimes send fake ping flag
         if random.random() < 0.3:
-            send_fake_flag_packet(noise_ip, generate_random_port(), 'ping')
+            send_fake_flag_packet(ip, generate_random_port(), 'ping')
     elif packet_type == 'dns':
-        send_dns_query(noise_ip)
+        send_dns_query(ip)
         # Sometimes send fake DNS flag
         if random.random() < 0.3:
-            send_fake_flag_packet(noise_ip, 53, 'dns')
+            send_fake_flag_packet(ip, 53, 'dns')
     elif packet_type == 'http':
-        send_http_request(noise_ip)
+        send_http_request(ip)
         # Sometimes send fake HTTP flag
         if random.random() < 0.3:
-            send_fake_flag_packet(noise_ip, 80, 'http')
+            send_fake_flag_packet(ip, 80, 'http')
     elif packet_type == 'telnet':
-        send_telnet_attempt(noise_ip)
+        send_telnet_attempt(ip)
         # Sometimes send fake telnet flag
         if random.random() < 0.3:
-            send_fake_flag_packet(noise_ip, 23, 'telnet')
+            send_fake_flag_packet(ip, 23, 'telnet')
     elif packet_type == 'tcp':
         port = generate_random_port()
-        send_tcp_packet(noise_ip, port)
+        send_tcp_packet(ip, port)
         # Sometimes send fake TCP flag
         if random.random() < 0.3:
-            send_fake_flag_packet(noise_ip, port, 'tcp')
+            send_fake_flag_packet(ip, port, 'tcp')
     elif packet_type == 'udp':
         port = generate_random_port()
-        send_udp_packet(noise_ip, port)
+        send_udp_packet(ip, port)
         # Sometimes send fake UDP flag
         if random.random() < 0.3:
-            send_fake_flag_packet(noise_ip, port, 'udp')
+            send_fake_flag_packet(ip, port, 'udp')
 
 def main():
     print("Starting Packet Sender for CTF Lab...")
     print("Flag will only be sent when admin users are logged in")
+    print("Sequential IP sending: noise every 1s, flag every 5s per IP")
     print("Press Ctrl+C to stop")
+
+    # Generate list of all IPs in subnet
+    all_ips = generate_all_ips(SUBNET)
+    print(f"Targeting {len(all_ips)} IPs in {SUBNET}.0/24 subnet")
 
     # Select random port for flag (fixed for this session)
     flag_port = generate_random_port(exclude_common=True)
     print(f"Flag will be sent to random port: {flag_port}")
 
+    # IP cycling indices
+    noise_ip_index = 0
+    flag_ip_index = 0
     last_flag_time = 0
 
     try:
@@ -211,20 +224,26 @@ def main():
             current_time = time.time()
             admin_logged_in = is_admin_logged_in()
 
+            # Get current IPs for this cycle
+            noise_ip = get_next_ip(all_ips, noise_ip_index)
+            flag_ip = get_next_ip(all_ips, flag_ip_index)
+
             if admin_logged_in:
-                print("Admin logged in - sending flag + noise")
-                # Send flag every 5 seconds when admin is online
+                print(f"Admin logged in - sending to IP {noise_ip}")
+                # Send flag every 5 seconds to next IP when admin is online
                 if current_time - last_flag_time >= FLAG_INTERVAL:
-                    flag_ip = generate_random_ip(SUBNET)
                     send_flag_packet(flag_ip, flag_port)
+                    flag_ip_index += 1  # Move to next IP for flag
                     last_flag_time = current_time
             else:
-                print("No admin logged in - sending noise only")
-                # Reset flag timer when admin logs out
+                print(f"No admin logged in - noise only to IP {noise_ip}")
+                # Reset flag timer and index when admin logs out
                 last_flag_time = 0
+                flag_ip_index = 0
 
-            # Always send noise packets
-            send_noise_only()
+            # Always send noise packets to next IP
+            send_noise_only(noise_ip)
+            noise_ip_index += 1  # Move to next IP for noise
 
             time.sleep(NOISE_INTERVAL)
 
