@@ -39,7 +39,7 @@ After=network.target
 [Service]
 Type=simple
 User=uvmu
-ExecStart=/usr/bin/python3 /opt/ctf-lab/fake_flags.py
+ExecStart=/usr/bin/stdbuf -oL -eL /usr/bin/python3 /opt/ctf-lab/fake_flags.py
 StandardOutput=append:/var/log/ctf-fake-flags.log
 StandardError=append:/var/log/ctf-fake-flags.log
 Restart=always
@@ -56,10 +56,24 @@ cat > /etc/cron.d/ctf-real-flag << EOF
 */5 * * * * uvmu /usr/bin/python3 /opt/ctf-lab/real_flag.py >> /var/log/ctf-real-flag.log 2>&1
 EOF
 
-# Setup noise generator cron job (optional)
-cat > /etc/cron.d/ctf-noise-generator << EOF
-# CTF Noise Generator - runs every minute for distraction
-* * * * * root /usr/bin/python3 /opt/ctf-lab/noise_generator.py >> /var/log/ctf-noise-generator.log 2>&1
+# Setup systemd service for noise generator
+echo "Setting up systemd service for noise generator..."
+cat > /etc/systemd/system/ctf-noise-generator.service << EOF
+[Unit]
+Description=CTF Noise Generator Service
+After=network.target
+
+[Service]
+Type=simple
+User=uvmu
+ExecStart=/usr/bin/stdbuf -oL -eL /usr/bin/python3 /opt/ctf-lab/noise_generator.py
+StandardOutput=append:/var/log/ctf-noise-generator.log
+StandardError=append:/var/log/ctf-noise-generator.log
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
 # Firewall configuration
@@ -83,7 +97,7 @@ dpkg-reconfigure --frontend=noninteractive unattended-upgrades
 echo "Enabling services and setting up logging..."
 systemctl daemon-reload
 systemctl enable ctf-fake-flags
-# systemctl enable ctf-noise-generator  # Uncomment if you want noise on this server too
+systemctl enable ctf-noise-generator
 
 systemctl enable cron
 systemctl start cron
