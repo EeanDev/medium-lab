@@ -65,17 +65,22 @@ def send_fake_flag(ip):
 
 def main():
     print("Starting Fake Flags Sender for CTF Lab...")
-    print("Will send fake flags continuously to create confusion")
+    print("Will send fake flags continuously in hierarchical order")
     print("Press Ctrl+C to stop")
 
     # Generate list of all IPs in subnet
     all_ips = generate_all_ips(SUBNET)
     print(f"Targeting {len(all_ips)} IPs in {SUBNET}.0/24 subnet")
 
+    # Initialize flag index for hierarchical/iterative sending
+    flag_index = 0
+
     try:
         while True:
-            # Send fake flag to ALL IPs in subnet continuously
-            fake_flag = random.choice(FAKE_FLAGS)
+            # Send fake flag to ALL IPs in subnet (hierarchical order)
+            fake_flag = FAKE_FLAGS[flag_index % len(FAKE_FLAGS)]
+            flag_index += 1  # Move to next flag for next iteration
+
             print(f"[{time.strftime('%H:%M:%S')}] Sending fake flag '{fake_flag}' to ALL {len(all_ips)} IPs")
 
             for ip in all_ips:
