@@ -33,9 +33,6 @@ def generate_all_ips(subnet):
     ips.append("172.16.120.11")  # Add test IP
     return ips
 
-def get_random_ip(ip_list):
-    """Get random IP from list for fair distribution"""
-    return random.choice(ip_list)
 
 def generate_random_port(exclude_common=False):
     """Generate random port between 1024-65535, optionally excluding common ports"""
