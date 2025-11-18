@@ -84,10 +84,10 @@ After running reset.sh, you can run setup.sh for a fresh installation.
 
 ## Usage
 
-### Automatic Operation (Cron Jobs)
-The scripts run automatically via cron jobs:
-- **Packet sender**: Every 15 minutes (flag only when admin logged in)
-- **Noise generator**: Every minute (optional distraction)
+### Automatic Operation
+The scripts run automatically:
+- **Packet sender**: Continuous systemd service (flag every 5 minutes when admin logged in)
+- **Noise generator**: Every minute via cron (optional distraction)
 
 ### Manual Testing
 ```bash
