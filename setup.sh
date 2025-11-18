@@ -87,8 +87,8 @@ chown ctf:ctf /var/log/ctf-fake-flags.log /var/log/ctf-real-flag.log /var/log/ct
 
 echo "=== Setup Complete ==="
 echo "Services are now active:"
-echo "  - Fake flags run continuously (only when admin logged in)"
-echo "  - Real flag runs every 5 minutes"
+echo "  - Fake flags run continuously (constant confusion)"
+echo "  - Real flag runs every 5 minutes (only when admin logged in)"
 echo "  - Noise generator runs every minute (optional)"
 echo ""
 echo "To start fake flags service:"

@@ -77,8 +77,8 @@ After running reset.sh, you can run setup.sh for a fresh installation.
 
 ### Automatic Operation
 The scripts run automatically:
-- **Fake flags**: Continuous systemd service (only when admin logged in)
-- **Real flag**: Every 5 minutes via cron job
+- **Fake flags**: Continuous systemd service (constant confusion)
+- **Real flag**: Every 5 minutes via cron job (only when admin logged in)
 - **Noise generator**: Every minute via cron (optional distraction)
 
 ### Manual Testing

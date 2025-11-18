@@ -69,24 +69,9 @@ def send_fake_flag(ip):
     except Exception as e:
         print(f"[{time.strftime('%H:%M:%S')}] Error sending fake flag to {ip}: {e}")
 
-def is_admin_logged_in():
-    """Check if admin users are currently logged in"""
-    try:
-        result = subprocess.run(['who'], capture_output=True, text=True, timeout=5)
-        admin_users = ['root', 'uvmu']  # Add your admin usernames here
-        for line in result.stdout.split('\n'):
-            if line.strip():
-                user = line.split()[0]
-                if user in admin_users:
-                    return True
-        return False
-    except Exception as e:
-        print(f"[{time.strftime('%H:%M:%S')}] Error checking admin login: {e}")
-        return False
-
 def main():
     print("Starting Fake Flags Sender for CTF Lab...")
-    print("Will send fake flags continuously when admin users are logged in")
+    print("Will send fake flags continuously to create confusion")
     print("Press Ctrl+C to stop")
 
     # Generate list of all IPs in subnet
@@ -95,30 +80,24 @@ def main():
 
     try:
         while True:
-            current_time = time.time()
-            admin_logged_in = is_admin_logged_in()
+            # Send fake flag to ALL IPs in subnet continuously
+            fake_flag = random.choice(FAKE_FLAGS)
+            print(f"[{time.strftime('%H:%M:%S')}] Sending fake flag '{fake_flag}' to ALL {len(all_ips)} IPs")
 
-            if admin_logged_in:
-                # Send fake flag to ALL IPs in subnet
-                fake_flag = random.choice(FAKE_FLAGS)
-                print(f"[{time.strftime('%H:%M:%S')}] Sending fake flag '{fake_flag}' to ALL {len(all_ips)} IPs")
-
-                for ip in all_ips:
-                    packet_type = random.choice(['icmp', 'udp'])
-                    try:
-                        if packet_type == 'icmp':
-                            proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-                        else:  # UDP
-                            proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-                        print(f"[{time.strftime('%H:%M:%S')}] Sent '{fake_flag}' to {ip}")
-                    except Exception as e:
-                        print(f"[{time.strftime('%H:%M:%S')}] Error sending to {ip}: {e}")
-            else:
-                print(f"[{time.strftime('%H:%M:%S')}] No admin logged in - waiting...")
+            for ip in all_ips:
+                packet_type = random.choice(['icmp', 'udp'])
+                try:
+                    if packet_type == 'icmp':
+                        proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                    else:  # UDP
+                        proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                    print(f"[{time.strftime('%H:%M:%S')}] Sent '{fake_flag}' to {ip}")
+                except Exception as e:
+                    print(f"[{time.strftime('%H:%M:%S')}] Error sending to {ip}: {e}")
 
             time.sleep(NOISE_INTERVAL)
 
