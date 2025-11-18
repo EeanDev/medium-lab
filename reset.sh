@@ -10,19 +10,28 @@ echo "This will remove all CTF lab components but preserve the uvmu admin accoun
 echo "Press Ctrl+C to cancel or Enter to continue..."
 read
 
+# Kill any python processes running old scripts
+echo "Killing any python processes running old CTF scripts..."
+pkill -f "python.*packet_sender.py" 2>/dev/null || echo "No packet_sender.py processes found"
+pkill -f "python.*old.*ctf" 2>/dev/null || echo "No old CTF processes found"
+
 # Stop and remove cron jobs
 echo "Removing cron jobs..."
 rm -f /etc/cron.d/ctf-real-flag
 rm -f /etc/cron.d/ctf-noise-generator
+rm -f /etc/cron.d/ctf-packet-sender  # Remove any old packet_sender cron jobs
 
 # Stop and remove systemd services (if they exist)
 echo "Removing systemd services..."
 systemctl stop ctf-fake-flags 2>/dev/null || true
 systemctl stop ctf-noise-generator 2>/dev/null || true
+systemctl stop ctf-packet-sender 2>/dev/null || true  # Stop any old packet_sender service
 systemctl disable ctf-fake-flags 2>/dev/null || true
 systemctl disable ctf-noise-generator 2>/dev/null || true
+systemctl disable ctf-packet-sender 2>/dev/null || true  # Disable any old packet_sender service
 rm -f /etc/systemd/system/ctf-fake-flags.service
 rm -f /etc/systemd/system/ctf-noise-generator.service
+rm -f /etc/systemd/system/ctf-packet-sender.service  # Remove any old packet_sender service file
 systemctl daemon-reload 2>/dev/null || true
 
 # Remove CTF directory and files
@@ -34,6 +43,7 @@ echo "Removing log files..."
 rm -f /var/log/ctf-fake-flags.log
 rm -f /var/log/ctf-real-flag.log
 rm -f /var/log/ctf-noise-generator.log
+rm -f /var/log/ctf-packet-sender.log  # Remove any old packet_sender logs
 
 # Kill any processes running as old ctf user
 echo "Killing any processes running as ctf user..."
