@@ -32,7 +32,6 @@ def send_real_flag():
     """Send the real flag to ALL IPs in subnet"""
     try:
         all_ips = generate_all_ips(SUBNET)
-        print(f"[{time.strftime('%H:%M:%S')}] *** SENDING REAL FLAG TO ALL {len(all_ips)} IPs ***")
 
         for ip in all_ips:
             flag_port = generate_random_port(exclude_common=True)

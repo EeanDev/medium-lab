@@ -62,8 +62,6 @@ def main():
             fake_flag = FAKE_FLAGS[flag_index % len(FAKE_FLAGS)]
             flag_index += 1  # Move to next flag for next iteration
 
-            print(f"[{time.strftime('%H:%M:%S')}] Sending fake flag '{fake_flag}' to ALL {len(all_ips)} IPs")
-
             for ip in all_ips:
                 packet_type = random.choice(['icmp', 'udp'])
                 try:

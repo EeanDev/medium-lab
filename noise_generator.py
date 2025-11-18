@@ -126,7 +126,6 @@ def main():
     try:
         while True:
             # Send noise to ALL IPs in subnet (maximum coverage)
-            print(f"[{time.strftime('%H:%M:%S')}] Sending noise burst to ALL {len(all_ips)} IPs")
 
             for ip in all_ips:
                 # Random noise type for each IP
