@@ -13,7 +13,7 @@ import sys
 
 # Configuration
 SUBNET = "172.16.200"
-NOISE_INTERVAL = 30  # seconds between fake flag bursts (to all IPs)
+NOISE_INTERVAL = 10  # seconds between fake flag bursts (to all IPs)
 
 # Fake FLAG messages for confusion
 FAKE_FLAGS = [
