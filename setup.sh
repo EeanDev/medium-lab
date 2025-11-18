@@ -39,7 +39,9 @@ After=network.target
 [Service]
 Type=simple
 User=uvmu
-ExecStart=/usr/bin/python3 /opt/ctf-lab/fake_flags.py >> /var/log/ctf-fake-flags.log 2>&1
+ExecStart=/usr/bin/python3 /opt/ctf-lab/fake_flags.py
+StandardOutput=append:/var/log/ctf-fake-flags.log
+StandardError=append:/var/log/ctf-fake-flags.log
 Restart=always
 RestartSec=5
 
