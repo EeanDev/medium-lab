@@ -45,16 +45,7 @@ Edit the admin users list in `packet_sender.py`:
 admin_users = ['root', 'your_username']  # Add your admin usernames
 ```
 
-### 4. SSH Key Setup
-Add your SSH public key to the ctf user:
-```bash
-sudo -u ctf mkdir -p /home/ctf/.ssh
-sudo -u ctf chmod 700 /home/ctf/.ssh
-echo "your_public_key_here" | sudo -u ctf tee /home/ctf/.ssh/authorized_keys
-sudo -u ctf chmod 600 /home/ctf/.ssh/authorized_keys
-```
-
-### 5. Verify Setup
+### 4. Verify Setup
 ```bash
 # Check cron jobs
 sudo crontab -l
