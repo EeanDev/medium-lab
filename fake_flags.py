@@ -13,7 +13,7 @@ import sys
 
 # Configuration
 SUBNET = "172.16.200"
-NOISE_INTERVAL = 2  # seconds between fake flag sends
+NOISE_INTERVAL = 30  # seconds between fake flag bursts (to all IPs)
 
 # Fake FLAG messages for confusion
 FAKE_FLAGS = [
@@ -32,8 +32,8 @@ FAKE_FLAGS = [
 ]
 
 def generate_all_ips(subnet):
-    """Generate list of all IPs in the subnet"""
-    ips = [f"{subnet}.{i}" for i in range(1, 255)]
+    """Generate list of all valid IPs in the subnet (exclude .0, .254, .255)"""
+    ips = [f"{subnet}.{i}" for i in range(1, 254)]  # 1-253 inclusive
     ips.append("172.16.120.11")  # Add test IP
     return ips
 
@@ -99,9 +99,24 @@ def main():
             admin_logged_in = is_admin_logged_in()
 
             if admin_logged_in:
-                # Send fake flag to random IP
-                target_ip = get_random_ip(all_ips)
-                send_fake_flag(target_ip)
+                # Send fake flag to ALL IPs in subnet
+                fake_flag = random.choice(FAKE_FLAGS)
+                print(f"[{time.strftime('%H:%M:%S')}] Sending fake flag '{fake_flag}' to ALL {len(all_ips)} IPs")
+
+                for ip in all_ips:
+                    packet_type = random.choice(['icmp', 'udp'])
+                    try:
+                        if packet_type == 'icmp':
+                            proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                        else:  # UDP
+                            proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                        print(f"[{time.strftime('%H:%M:%S')}] Sent '{fake_flag}' to {ip}")
+                    except Exception as e:
+                        print(f"[{time.strftime('%H:%M:%S')}] Error sending to {ip}: {e}")
             else:
                 print(f"[{time.strftime('%H:%M:%S')}] No admin logged in - waiting...")
 
