@@ -14,7 +14,7 @@ import concurrent.futures
 
 # Configuration
 SUBNET = "172.16.200"
-NOISE_INTERVAL = 5  # seconds between each fake flag (to all IPs)
+NOISE_INTERVAL = 10  # seconds between each fake flag (to all IPs)
 
 # Fake FLAG messages for confusion
 FAKE_FLAGS = [
