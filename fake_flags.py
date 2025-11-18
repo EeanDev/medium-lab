@@ -10,6 +10,7 @@ import random
 import time
 import socket
 import sys
+import concurrent.futures
 
 # Configuration
 SUBNET = "172.16.200"
@@ -41,6 +42,23 @@ def generate_random_port(exclude_common=False):
         return generate_random_port(exclude_common=True)
     return port
 
+def send_flag_to_ip(ip, flag):
+    """Send fake flag to a single IP (used for threading)"""
+    packet_type = random.choice(['icmp', 'udp'])
+    port = generate_random_port()
+    print(f"[{time.strftime('%H:%M:%S')}] Sending '{flag}' to {ip}:{port} via {packet_type.upper()}")
+    try:
+        if packet_type == 'icmp':
+            proc = subprocess.run(['echo', flag], stdout=subprocess.PIPE)
+            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
+                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=1)
+        else:  # UDP
+            proc = subprocess.run(['echo', flag], stdout=subprocess.PIPE)
+            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
+                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=1)
+    except Exception as e:
+        print(f"[{time.strftime('%H:%M:%S')}] Error sending '{flag}' to {ip}:{port}: {e}")
+
 def main():
     print("Starting Fake Flags Sender for CTF Lab...")
     print("Will send fake flags continuously in hierarchical order")
@@ -59,21 +77,12 @@ def main():
             fake_flag = FAKE_FLAGS[flag_index % len(FAKE_FLAGS)]
             flag_index += 1  # Move to next flag for next iteration
 
-            for ip in all_ips:
-                packet_type = random.choice(['icmp', 'udp'])
-                port = generate_random_port()
-                print(f"[{time.strftime('%H:%M:%S')}] Sending '{fake_flag}' to {ip}:{port} via {packet_type.upper()}")
-                try:
-                    if packet_type == 'icmp':
-                        proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-                    else:  # UDP
-                        proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-                except Exception as e:
-                    print(f"[{time.strftime('%H:%M:%S')}] Error sending '{fake_flag}' to {ip}:{port}: {e}")
+            # Send to all IPs in parallel using threading
+            with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+                # Submit all tasks at once
+                futures = [executor.submit(send_flag_to_ip, ip, fake_flag) for ip in all_ips]
+                # Wait for all to complete (but they run in parallel)
+                concurrent.futures.wait(futures)
 
             time.sleep(NOISE_INTERVAL)
 

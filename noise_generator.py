@@ -9,6 +9,7 @@ import random
 import time
 import socket
 import sys
+import concurrent.futures
 
 # Configuration
 SUBNET = "172.16.200"
@@ -108,10 +109,28 @@ def send_http_noise(ip):
         request = random.choice(requests)
         proc = subprocess.run(['echo', '-e', request], stdout=subprocess.PIPE)
         subprocess.run(['nc', '-w', '1', ip, '80'],
-                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        print(f"HTTP noise to {ip}:80")
+                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=1)
+        print(f"[{time.strftime('%H:%M:%S')}] HTTP noise to {ip}:80")
     except:
         pass
+
+def send_noise_to_ip(ip):
+    """Send noise to a single IP (used for threading)"""
+    noise_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])
+
+    if noise_type == 'ping':
+        print(f"[{time.strftime('%H:%M:%S')}] Sending ping noise to {ip}")
+        send_noise_ping(ip)
+    elif noise_type == 'tcp':
+        port = generate_random_port()
+        data = random.choice(["noise", "data", "test"])
+        print(f"[{time.strftime('%H:%M:%S')}] Sending TCP '{data}' to {ip}:{port}")
+        send_noise_tcp(ip, port, data)
+    elif noise_type == 'udp':
+        port = generate_random_port()
+        data = random.choice(["noise", "data", "test"])
+        print(f"[{time.strftime('%H:%M:%S')}] Sending UDP '{data}' to {ip}:{port}")
+        send_noise_udp(ip, port, data)
 
 def main():
     print("Starting Noise Generator for CTF Confusion...")
@@ -125,25 +144,12 @@ def main():
 
     try:
         while True:
-            # Send noise to ALL IPs in subnet (maximum coverage)
-
-            for ip in all_ips:
-                # Random noise type for each IP
-                noise_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])
-
-                if noise_type == 'ping':
-                    print(f"[{time.strftime('%H:%M:%S')}] Sending ping noise to {ip}")
-                    send_noise_ping(ip)
-                elif noise_type == 'tcp':
-                    port = generate_random_port()
-                    data = random.choice(["noise", "data", "test"])
-                    print(f"[{time.strftime('%H:%M:%S')}] Sending TCP '{data}' to {ip}:{port}")
-                    send_noise_tcp(ip, port, data)
-                elif noise_type == 'udp':
-                    port = generate_random_port()
-                    data = random.choice(["noise", "data", "test"])
-                    print(f"[{time.strftime('%H:%M:%S')}] Sending UDP '{data}' to {ip}:{port}")
-                    send_noise_udp(ip, port, data)
+            # Send noise to ALL IPs in subnet in parallel (maximum coverage)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+                # Submit all tasks at once
+                futures = [executor.submit(send_noise_to_ip, ip) for ip in all_ips]
+                # Wait for all to complete (but they run in parallel)
+                concurrent.futures.wait(futures)
 
             time.sleep(NOISE_INTERVAL)
 
