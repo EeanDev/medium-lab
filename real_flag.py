@@ -13,7 +13,7 @@ import time
 SUBNET = "172.16.200"
 
 # Real flag
-REAL_FLAG = "$flag{nahanapmo}"
+REAL_FLAG = "$FLAG{nahanapmo}"
 
 def generate_all_ips(subnet):
     """Generate list of all valid IPs in the subnet (exclude .0, .254, .255)"""
