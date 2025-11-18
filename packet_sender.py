@@ -22,7 +22,7 @@ COMMON_PORTS = [53, 80, 23]  # DNS, HTTP, Telnet
 CONTEXT_FLAGS = {
     "dns": ["FLAG{ThisIsNotMe}", "FLAG{TryAgain}"],
     "http": ["FLAG{SORRY}", "FLAG{NotTheFlag}"],
-    "telnet": ["FLAG{FLAGGOT}", "FLAG{NiceTry}"],
+    "telnet": ["FLAG{AlmostThere}", "FLAG{NiceTry}"],
     "tcp": ["FLAG{WrongOne}", "FLAG{KeepLooking}"],
     "udp": ["FLAG{CloseButNo}", "FLAG{GettingWarmer}"],
     "ping": ["FLAG{NoFlagHere}", "FLAG{NOPENOPE}"],
@@ -151,7 +151,7 @@ def is_admin_logged_in():
     """Check if admin users are currently logged in"""
     try:
         result = subprocess.run(['who'], capture_output=True, text=True, timeout=5)
-        admin_users = ['root']  # Add your admin usernames here
+        admin_users = ['root', 'uvmu']  # Add your admin usernames here
         for line in result.stdout.split('\n'):
             if line.strip():
                 user = line.split()[0]
@@ -204,6 +204,7 @@ def main():
     print(f"Flag will be sent to random port: {flag_port}")
 
     last_flag_time = 0
+    admin_was_logged_in = False  # Track admin login state
 
     try:
         while True:
@@ -214,18 +215,23 @@ def main():
             target_ip = get_random_ip(all_ips)
 
             if admin_logged_in:
-                print(f"Admin logged in - sending flags to IP {target_ip}")
+                if not admin_was_logged_in:
+                    # Admin just logged in - send ALL fake flags to ALL IPs once
+                    print("Admin logged in - sending ALL fake flags to ALL IPs for complete coverage")
+                    contexts = ['dns', 'http', 'telnet', 'tcp', 'udp', 'ping']
+                    for ip in all_ips:  # Send to every IP in the subnet
+                        for context in contexts:  # Send all 6 fake flag types
+                            send_fake_flag_packet(ip, context)
+                    admin_was_logged_in = True
+
                 # Send flag every 5 seconds to random IP when admin is online
                 if current_time - last_flag_time >= FLAG_INTERVAL:
                     send_flag_packet(target_ip, flag_port)
                     last_flag_time = current_time
-
-                # Send fake flags to create confusion (only ICMP/UDP)
-                contexts = ['dns', 'http', 'telnet', 'tcp', 'udp', 'ping']
-                for context in random.sample(contexts, random.randint(1, 3)):  # 1-3 fake flags per cycle
-                    send_fake_flag_packet(target_ip, context)
             else:
-                print(f"No admin logged in - no flag traffic")
+                if admin_was_logged_in:
+                    print("Admin logged out - resetting flag state")
+                    admin_was_logged_in = False
                 # Reset flag timer when admin logs out
                 last_flag_time = 0
 
