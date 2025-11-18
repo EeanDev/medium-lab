@@ -22,7 +22,9 @@ FAKE_FLAGS = [
     "FLAG{SORRY}",
     "FLAG{NotTheFlag}",
     "FLAG{AlmostThere}",
-    "FLAG{WrongOne}"
+    "FLAG{WrongOne}",
+    "FLAG{NOPE}",
+    "FLAG{CloseButNo}"
 ]
 
 def generate_all_ips(subnet):
@@ -41,27 +43,6 @@ def generate_random_port(exclude_common=False):
     if exclude_common and port in [53, 80, 23]:
         return generate_random_port(exclude_common=True)
     return port
-
-def send_fake_flag(ip):
-    """Send fake flag packet for confusion (only ICMP and UDP)"""
-    try:
-        fake_flag = random.choice(FAKE_FLAGS)
-        packet_type = random.choice(['icmp', 'udp'])  # Only ICMP and UDP for flags
-
-        if packet_type == 'icmp':
-            # Try ICMP first, fallback to UDP
-            proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        else:  # UDP
-            proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        print(f"[{time.strftime('%H:%M:%S')}] Sent fake flag '{fake_flag}' to {ip} via {packet_type.upper()}")
-    except subprocess.TimeoutExpired:
-        print(f"[{time.strftime('%H:%M:%S')}] Fake flag send to {ip} timed out")
-    except Exception as e:
-        print(f"[{time.strftime('%H:%M:%S')}] Error sending fake flag to {ip}: {e}")
 
 def main():
     print("Starting Fake Flags Sender for CTF Lab...")
