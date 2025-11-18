@@ -39,7 +39,7 @@ After=network.target
 [Service]
 Type=simple
 User=uvmu
-ExecStart=/usr/bin/python3 /opt/ctf-lab/fake_flags.py
+ExecStart=/usr/bin/python3 /opt/ctf-lab/fake_flags.py >> /var/log/ctf-fake-flags.log 2>&1
 Restart=always
 RestartSec=5
 
@@ -99,7 +99,7 @@ echo "To start fake flags service:"
 echo "  sudo systemctl start ctf-fake-flags"
 echo ""
 echo "To check cron jobs:"
-echo "  sudo crontab -l -u ctf"
+echo "  sudo crontab -l -u uvmu"
 echo ""
 echo "To check logs:"
 echo "  tail -f /var/log/ctf-fake-flags.log"
