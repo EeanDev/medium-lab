@@ -14,7 +14,7 @@ import concurrent.futures
 
 # Configuration
 SUBNET = "172.16.200"
-NOISE_INTERVAL = 10  # seconds between fake flag bursts (to all IPs)
+NOISE_INTERVAL = 5  # seconds between each fake flag (to all IPs)
 
 # Fake FLAG messages for confusion
 FAKE_FLAGS = [
@@ -73,9 +73,11 @@ def main():
 
     try:
         while True:
-            # Send fake flag to ALL IPs in subnet (hierarchical order)
+            # Send ONE fake flag to ALL IPs (spaced 5 seconds apart)
             fake_flag = FAKE_FLAGS[flag_index % len(FAKE_FLAGS)]
             flag_index += 1  # Move to next flag for next iteration
+
+            print(f"[{time.strftime('%H:%M:%S')}] >>> SENDING FAKE FLAG '{fake_flag}' TO ALL {len(all_ips)} IPs <<<")
 
             # Send to all IPs in parallel using threading
             with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
