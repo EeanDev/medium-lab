@@ -25,6 +25,10 @@ cp real_flag.py /opt/ctf-lab/
 cp noise_generator.py /opt/ctf-lab/
 chmod +x /opt/ctf-lab/*.py
 
+# Create uvmu user if it doesn't exist
+echo "Creating uvmu user..."
+useradd -m -s /bin/bash uvmu 2>/dev/null || echo "User uvmu already exists"
+
 # Setup systemd service for continuous fake flags
 echo "Setting up systemd service for continuous fake flags..."
 cat > /etc/systemd/system/ctf-fake-flags.service << EOF
@@ -34,7 +38,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=ctf
+User=uvmu
 ExecStart=/usr/bin/python3 /opt/ctf-lab/fake_flags.py
 Restart=always
 RestartSec=5
@@ -47,7 +51,7 @@ EOF
 echo "Setting up cron job for real flag..."
 cat > /etc/cron.d/ctf-real-flag << EOF
 # CTF Real Flag - runs every 5 minutes
-*/5 * * * * ctf /usr/bin/python3 /opt/ctf-lab/real_flag.py >> /var/log/ctf-real-flag.log 2>&1
+*/5 * * * * uvmu /usr/bin/python3 /opt/ctf-lab/real_flag.py >> /var/log/ctf-real-flag.log 2>&1
 EOF
 
 # Setup noise generator cron job (optional)
@@ -83,7 +87,7 @@ systemctl enable cron
 systemctl start cron
 
 touch /var/log/ctf-fake-flags.log /var/log/ctf-real-flag.log /var/log/ctf-noise-generator.log
-chown ctf:ctf /var/log/ctf-fake-flags.log /var/log/ctf-real-flag.log /var/log/ctf-noise-generator.log
+chown uvmu:uvmu /var/log/ctf-fake-flags.log /var/log/ctf-real-flag.log /var/log/ctf-noise-generator.log
 
 echo "=== Setup Complete ==="
 echo "Services are now active:"
@@ -104,5 +108,5 @@ echo "  tail -f /var/log/ctf-noise-generator.log"
 echo ""
 echo "To modify admin users, edit the admin_users list in fake_flags.py"
 echo "Participants monitor network traffic with Wireshark - no login required."
-echo "Fake flags run as ctf user via systemd service."
-echo "Real flag runs as ctf user via cron job."
+echo "Fake flags run as uvmu user via systemd service."
+echo "Real flag runs as uvmu user via cron job."
