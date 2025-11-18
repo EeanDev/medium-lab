@@ -61,18 +61,19 @@ def main():
 
             for ip in all_ips:
                 packet_type = random.choice(['icmp', 'udp'])
+                port = generate_random_port()
+                print(f"[{time.strftime('%H:%M:%S')}] Sending '{fake_flag}' to {ip}:{port} via {packet_type.upper()}")
                 try:
                     if packet_type == 'icmp':
                         proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
                               input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
                     else:  # UDP
                         proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
                               input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-                    print(f"[{time.strftime('%H:%M:%S')}] Sent '{fake_flag}' to {ip}")
                 except Exception as e:
-                    print(f"[{time.strftime('%H:%M:%S')}] Error sending to {ip}: {e}")
+                    print(f"[{time.strftime('%H:%M:%S')}] Error sending '{fake_flag}' to {ip}:{port}: {e}")
 
             time.sleep(NOISE_INTERVAL)
 
