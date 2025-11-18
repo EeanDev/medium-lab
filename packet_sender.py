@@ -18,16 +18,23 @@ FLAG_INTERVAL = 5  # seconds between IPs for flag
 NOISE_INTERVAL = 2  # seconds between IPs for noise
 COMMON_PORTS = [53, 80, 23]  # DNS, HTTP, Telnet
 
-# Fake FLAG messages for confusion + real flag
-CONTEXT_FLAGS = {
-    "dns": ["FLAG{ThisIsNotMe}", "FLAG{TryAgain}"],
-    "http": ["FLAG{SORRY}", "FLAG{NotTheFlag}"],
-    "telnet": ["FLAG{AlmostThere}", "FLAG{NiceTry}"],
-    "tcp": ["FLAG{WrongOne}", "FLAG{KeepLooking}"],
-    "udp": ["FLAG{CloseButNo}", "FLAG{GettingWarmer}"],
-    "ping": ["FLAG{NoFlagHere}", "FLAG{NOPENOPE}"],
-    "real": "$flag{nahanapmo}"
-}
+# Fake FLAG messages for confusion + real flag (all sent via ICMP or UDP)
+FAKE_FLAGS = [
+    "FLAG{ThisIsNotMe}",
+    "FLAG{TryAgain}",
+    "FLAG{SORRY}",
+    "FLAG{NotTheFlag}",
+    "FLAG{AlmostThere}",
+    "FLAG{NiceTry}",
+    "FLAG{WrongOne}",
+    "FLAG{KeepLooking}",
+    "FLAG{CloseButNo}",
+    "FLAG{GettingWarmer}",
+    "FLAG{NoFlagHere}",
+    "FLAG{NOPENOPE}"
+]
+
+REAL_FLAG = "$flag{nahanapmo}"
 
 def generate_all_ips(subnet):
     """Generate list of all IPs in the subnet"""
@@ -50,8 +57,7 @@ def generate_random_port(exclude_common=False):
 def send_flag_packet(ip, port):
     """Send flag packet to random port (UDP only for visibility)"""
     try:
-        flag = CONTEXT_FLAGS["real"]
-        proc = subprocess.run(['echo', flag],
+        proc = subprocess.run(['echo', REAL_FLAG],
                             stdout=subprocess.PIPE)
         result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
                               input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
@@ -76,10 +82,10 @@ def is_admin_logged_in():
         print(f"Error checking admin login: {e}")
         return False
 
-def send_fake_flag_packet(ip, context):
+def send_fake_flag_packet(ip):
     """Send fake flag packet for confusion (only ICMP and UDP)"""
     try:
-        fake_flag = random.choice(CONTEXT_FLAGS[context])
+        fake_flag = random.choice(FAKE_FLAGS)
         packet_type = random.choice(['icmp', 'udp'])  # Only ICMP and UDP for flags
 
         if packet_type == 'icmp':
@@ -132,10 +138,9 @@ def main():
                 if not admin_was_logged_in:
                     # Admin just logged in - send ALL fake flags to ALL IPs once
                     print("Admin logged in - sending ALL fake flags to ALL IPs for complete coverage")
-                    contexts = ['dns', 'http', 'telnet', 'tcp', 'udp', 'ping']
                     for ip in all_ips:  # Send to every IP in the subnet
-                        for context in contexts:  # Send all 6 fake flag types
-                            send_fake_flag_packet(ip, context)
+                        for _ in range(6):  # Send 6 fake flags per IP (one for each original context)
+                            send_fake_flag_packet(ip)
                     admin_was_logged_in = True
 
                 # Send flag every 5 seconds to random IP when admin is online
