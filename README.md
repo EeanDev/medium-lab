@@ -86,7 +86,7 @@ After running reset.sh, you can run setup.sh for a fresh installation.
 
 ### Automatic Operation (Cron Jobs)
 The scripts run automatically via cron jobs:
-- **Packet sender**: Every 2 minutes (flag only when admin logged in)
+- **Packet sender**: Every 15 minutes (flag only when admin logged in)
 - **Noise generator**: Every minute (optional distraction)
 
 ### Manual Testing

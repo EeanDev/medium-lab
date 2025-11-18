@@ -24,11 +24,11 @@ cp packet_sender.py /opt/ctf-lab/
 cp noise_generator.py /opt/ctf-lab/
 chmod +x /opt/ctf-lab/*.py
 
-# Setup cron job for conditional flag sending
+# Setup cron job for conditional flag sending (runs every 15 minutes to avoid timing conflicts)
 echo "Setting up cron job for conditional packet sending..."
 cat > /etc/cron.d/ctf-packet-sender << EOF
-# CTF Packet Sender - runs every 2 minutes, sends flag only when admin logged in
-*/2 * * * * root /usr/bin/python3 /opt/ctf-lab/packet_sender.py >> /var/log/ctf-packet-sender.log 2>&1
+# CTF Packet Sender - runs every 15 minutes, sends flag only when admin logged in
+*/15 * * * * ctf /usr/bin/python3 /opt/ctf-lab/packet_sender.py >> /var/log/ctf-packet-sender.log 2>&1
 EOF
 
 # Setup noise generator cron job (optional)
