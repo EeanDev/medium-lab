@@ -110,26 +110,25 @@ def main():
 
             if admin_logged_in:
                 if not admin_was_logged_in:
-                    # Admin just logged in - send fake flags to ALL IPs in sequence
-                    print("Admin logged in - sending fake flags to ALL IPs in sequence")
-                    for i, ip in enumerate(all_ips):  # Send to every IP in the subnet
-                        # Cycle through fake flags in order
-                        fake_flag = FAKE_FLAGS[i % len(FAKE_FLAGS)]
-                        # Send via random protocol (ICMP or UDP)
-                        packet_type = random.choice(['icmp', 'udp'])
-                        try:
-                            if packet_type == 'icmp':
-                                # Try ICMP first, fallback to UDP
-                                proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-                            else:  # UDP
-                                proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-                            print(f"Sent fake flag '{fake_flag}' to {ip} via {packet_type.upper()}")
-                        except Exception as e:
-                            print(f"Error sending fake flag to {ip}: {e}")
+                    # Admin just logged in - send EACH fake flag to ALL IPs
+                    print("Admin logged in - sending ALL fake flags to ALL IPs")
+                    for fake_flag in FAKE_FLAGS:  # Each fake flag goes to ALL IPs
+                        for ip in all_ips:  # Send to every IP in the subnet
+                            # Send via random protocol (ICMP or UDP)
+                            packet_type = random.choice(['icmp', 'udp'])
+                            try:
+                                if packet_type == 'icmp':
+                                    # Try ICMP first, fallback to UDP
+                                    proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                                    result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                                else:  # UDP
+                                    proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                                    result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                                print(f"Sent fake flag '{fake_flag}' to {ip} via {packet_type.upper()}")
+                            except Exception as e:
+                                print(f"Error sending fake flag to {ip}: {e}")
                     admin_was_logged_in = True
 
                 # Send flag every 5 seconds to random IP when admin is online
