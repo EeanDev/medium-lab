@@ -106,6 +106,7 @@ def main():
         while True:
             current_time = time.time()
             admin_logged_in = is_admin_logged_in()
+            print(f"[{time.strftime('%H:%M:%S')}] Admin logged in: {admin_logged_in}, Cycle: {fake_flag_index}")
 
             # Randomly select IP for real flag
             target_ip = get_random_ip(all_ips)
@@ -155,6 +156,8 @@ def main():
                     print("Admin logged out - resetting flag sequence")
                     admin_was_logged_in = False
                     fake_flag_index = 0
+                else:
+                    print("No admin logged in - waiting...")
                 last_flag_time = 0
 
             time.sleep(NOISE_INTERVAL)
