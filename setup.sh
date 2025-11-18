@@ -20,15 +20,34 @@ mkdir -p /opt/ctf-lab
 
 # Copy scripts
 echo "Copying scripts to /opt/ctf-lab/..."
-cp packet_sender.py /opt/ctf-lab/
+cp fake_flags.py /opt/ctf-lab/
+cp real_flag.py /opt/ctf-lab/
 cp noise_generator.py /opt/ctf-lab/
 chmod +x /opt/ctf-lab/*.py
 
-# Setup cron job for flag sending (runs every 5 minutes)
-echo "Setting up cron job for flag sending..."
-cat > /etc/cron.d/ctf-packet-sender << EOF
-# CTF Packet Sender - runs every 5 minutes, completes full cycle within 5 minutes
-*/5 * * * * ctf /usr/bin/python3 /opt/ctf-lab/packet_sender.py >> /var/log/ctf-packet-sender.log 2>&1
+# Setup systemd service for continuous fake flags
+echo "Setting up systemd service for continuous fake flags..."
+cat > /etc/systemd/system/ctf-fake-flags.service << EOF
+[Unit]
+Description=CTF Fake Flags Service
+After=network.target
+
+[Service]
+Type=simple
+User=ctf
+ExecStart=/usr/bin/python3 /opt/ctf-lab/fake_flags.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Setup cron job for real flag (runs every 5 minutes)
+echo "Setting up cron job for real flag..."
+cat > /etc/cron.d/ctf-real-flag << EOF
+# CTF Real Flag - runs every 5 minutes
+*/5 * * * * ctf /usr/bin/python3 /opt/ctf-lab/real_flag.py >> /var/log/ctf-real-flag.log 2>&1
 EOF
 
 # Setup noise generator cron job (optional)
@@ -54,25 +73,35 @@ systemctl restart ssh
 echo "Enabling automatic updates..."
 dpkg-reconfigure --frontend=noninteractive unattended-upgrades
 
-# Enable cron and create log files
-echo "Enabling cron and setting up logging..."
+# Enable services and create log files
+echo "Enabling services and setting up logging..."
+systemctl daemon-reload
+systemctl enable ctf-fake-flags
+# systemctl enable ctf-noise-generator  # Uncomment if you want noise on this server too
+
 systemctl enable cron
 systemctl start cron
 
-touch /var/log/ctf-packet-sender.log /var/log/ctf-noise-generator.log
-chown ctf:ctf /var/log/ctf-packet-sender.log /var/log/ctf-noise-generator.log
+touch /var/log/ctf-fake-flags.log /var/log/ctf-real-flag.log /var/log/ctf-noise-generator.log
+chown ctf:ctf /var/log/ctf-fake-flags.log /var/log/ctf-real-flag.log /var/log/ctf-noise-generator.log
 
 echo "=== Setup Complete ==="
-echo "Cron jobs are now active:"
-echo "  - Packet sender runs every 5 minutes (completes full cycle within 5 minutes)"
+echo "Services are now active:"
+echo "  - Fake flags run continuously (only when admin logged in)"
+echo "  - Real flag runs every 5 minutes"
 echo "  - Noise generator runs every minute (optional)"
+echo ""
+echo "To start fake flags service:"
+echo "  sudo systemctl start ctf-fake-flags"
 echo ""
 echo "To check cron jobs:"
 echo "  sudo crontab -l -u ctf"
 echo ""
 echo "To check logs:"
-echo "  tail -f /var/log/ctf-packet-sender.log"
+echo "  tail -f /var/log/ctf-fake-flags.log"
+echo "  tail -f /var/log/ctf-real-flag.log"
 echo "  tail -f /var/log/ctf-noise-generator.log"
 echo ""
-echo "To modify admin users, edit the admin_users list in packet_sender.py"
-echo "Scripts run as ctf user via cron jobs."
+echo "To modify admin users, edit the admin_users list in fake_flags.py"
+echo "Fake flags run as ctf user via systemd service."
+echo "Real flag runs as ctf user via cron job."

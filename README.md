@@ -84,15 +84,19 @@ After running reset.sh, you can run setup.sh for a fresh installation.
 
 ## Usage
 
-### Automatic Operation (Cron Jobs)
-The scripts run automatically via cron jobs:
-- **Packet sender**: Every 5 minutes (completes full cycle within 5 minutes)
-- **Noise generator**: Every minute (optional distraction)
+### Automatic Operation
+The scripts run automatically:
+- **Fake flags**: Continuous systemd service (only when admin logged in)
+- **Real flag**: Every 5 minutes via cron job
+- **Noise generator**: Every minute via cron (optional distraction)
 
 ### Manual Testing
 ```bash
-# Test packet sender
-sudo -u ctf python3 /opt/ctf-lab/packet_sender.py
+# Test fake flags sender
+sudo -u ctf python3 /opt/ctf-lab/fake_flags.py
+
+# Test real flag sender
+sudo -u ctf python3 /opt/ctf-lab/real_flag.py
 
 # Test noise generator
 sudo -u ctf python3 /opt/ctf-lab/noise_generator.py
