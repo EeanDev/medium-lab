@@ -82,32 +82,6 @@ def is_admin_logged_in():
         print(f"Error checking admin login: {e}")
         return False
 
-def send_fake_flag_packet(ip):
-    """Send fake flag packet for confusion (only ICMP and UDP)"""
-    try:
-        fake_flag = random.choice(FAKE_FLAGS)
-        packet_type = random.choice(['icmp', 'udp'])  # Only ICMP and UDP for flags
-
-        if packet_type == 'icmp':
-            # Send ICMP ping with flag as data (using hping3 if available, fallback to echo)
-            try:
-                proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-            except:
-                # Fallback: just send UDP
-                proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        else:  # UDP
-            proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
-            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
-                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        print(f"Sent fake flag '{fake_flag}' to {ip} via {packet_type.upper()}")
-    except subprocess.TimeoutExpired:
-        print(f"Fake flag send to {ip} timed out")
-    except Exception as e:
-        print(f"Error sending fake flag to {ip}: {e}")
 
 def main():
     print("Starting Packet Sender for CTF Lab...")
@@ -136,11 +110,26 @@ def main():
 
             if admin_logged_in:
                 if not admin_was_logged_in:
-                    # Admin just logged in - send ALL fake flags to ALL IPs once
-                    print("Admin logged in - sending ALL fake flags to ALL IPs for complete coverage")
-                    for ip in all_ips:  # Send to every IP in the subnet
-                        for _ in range(6):  # Send 6 fake flags per IP (one for each original context)
-                            send_fake_flag_packet(ip)
+                    # Admin just logged in - send fake flags to ALL IPs in sequence
+                    print("Admin logged in - sending fake flags to ALL IPs in sequence")
+                    for i, ip in enumerate(all_ips):  # Send to every IP in the subnet
+                        # Cycle through fake flags in order
+                        fake_flag = FAKE_FLAGS[i % len(FAKE_FLAGS)]
+                        # Send via random protocol (ICMP or UDP)
+                        packet_type = random.choice(['icmp', 'udp'])
+                        try:
+                            if packet_type == 'icmp':
+                                # Try ICMP first, fallback to UDP
+                                proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                            else:  # UDP
+                                proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
+                                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(generate_random_port())],
+                                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                            print(f"Sent fake flag '{fake_flag}' to {ip} via {packet_type.upper()}")
+                        except Exception as e:
+                            print(f"Error sending fake flag to {ip}: {e}")
                     admin_was_logged_in = True
 
                 # Send flag every 5 seconds to random IP when admin is online
