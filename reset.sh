@@ -10,10 +10,18 @@ echo "This will remove all CTF lab components but preserve the uvmu admin accoun
 echo "Press Ctrl+C to cancel or Enter to continue..."
 read
 
-# Kill any python processes running old scripts
-echo "Killing any python processes running old CTF scripts..."
-pkill -f "python.*packet_sender.py" 2>/dev/null || echo "No packet_sender.py processes found"
-pkill -f "python.*old.*ctf" 2>/dev/null || echo "No old CTF processes found"
+# Nuclear cleanup - kill ALL python processes and CTF-related processes
+echo "Nuclear cleanup - killing ALL python and CTF processes..."
+pkill -9 -f python 2>/dev/null || echo "No python processes found"
+pkill -9 -f ctf 2>/dev/null || echo "No CTF processes found"
+pkill -9 -f packet 2>/dev/null || echo "No packet processes found"
+pkill -9 -f flag 2>/dev/null || echo "No flag processes found"
+
+# Wait a moment for processes to die
+sleep 2
+
+# Double-check and kill any remaining
+ps aux | grep -E "(python|ctf|packet|flag)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || echo "No remaining processes found"
 
 # Stop and remove cron jobs
 echo "Removing cron jobs..."
@@ -78,13 +86,27 @@ echo "Reloading cron..."
 systemctl restart cron 2>/dev/null || true
 
 echo ""
-echo "=== Cleanup Complete ==="
-echo "All CTF lab components have been removed:"
-echo "  ✓ Cron jobs removed (ctf-real-flag, ctf-noise-generator)"
-echo "  ✓ Systemd services removed (ctf-fake-flags, ctf-noise-generator)"
+echo "=== Nuclear Cleanup Complete ==="
+echo "All CTF lab components have been NUKED:"
+echo "  ✓ ALL python processes killed"
+echo "  ✓ ALL CTF processes killed"
+echo "  ✓ Cron jobs removed (ctf-real-flag, ctf-noise-generator, ctf-packet-sender)"
+echo "  ✓ Systemd services removed (ctf-fake-flags, ctf-noise-generator, ctf-packet-sender)"
 echo "  ✓ CTF files and directories removed (/opt/ctf-lab/)"
 echo "  ✓ Log files removed (/var/log/ctf-*.log)"
+echo "  ✓ Old ctf user processes killed and user removed"
 echo "  ✓ uvmu user preserved (admin account)"
 echo "  ✓ Firewall reset"
 echo ""
-echo "You can now run setup.sh for a fresh installation"
+echo "System reboot recommended for complete cleanup!"
+echo ""
+echo "Reboot now? (y/N)"
+read -r reboot_choice
+if [[ "$reboot_choice" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    echo "Rebooting system in 5 seconds..."
+    sleep 5
+    reboot
+else
+    echo "You can now run setup.sh for a fresh installation"
+    echo "Or manually reboot with: sudo reboot"
+fi
