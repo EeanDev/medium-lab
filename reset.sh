@@ -6,7 +6,7 @@
 set -e
 
 echo "=== CTF Lab Reset/Cleanup ==="
-echo "This will completely remove all CTF lab components"
+echo "This will remove all CTF lab components but preserve the uvmu admin account"
 echo "Press Ctrl+C to cancel or Enter to continue..."
 read
 
@@ -34,6 +34,14 @@ echo "Removing log files..."
 rm -f /var/log/ctf-fake-flags.log
 rm -f /var/log/ctf-real-flag.log
 rm -f /var/log/ctf-noise-generator.log
+
+# Kill any processes running as old ctf user
+echo "Killing any processes running as ctf user..."
+pkill -u ctf 2>/dev/null || echo "No ctf user processes found"
+
+# Remove old ctf user if it exists
+echo "Removing old ctf user..."
+userdel -r ctf 2>/dev/null || echo "ctf user not found or already removed"
 
 # Note: uvmu user is preserved (admin account)
 echo "Preserving uvmu user (admin account)..."
