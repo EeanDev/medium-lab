@@ -36,12 +36,15 @@ def send_real_flag():
         for ip in all_ips:
             flag_port = generate_random_port(exclude_common=True)
 
-            # Send the real flag
-            proc = subprocess.run(['echo', REAL_FLAG], stdout=subprocess.PIPE)
-            result = subprocess.run(['nc', '-u', '-w', '1', ip, str(flag_port)],
-                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+            print(f"[{time.strftime('%H:%M:%S')}] Sending real flag to {ip}:{flag_port}")
 
-            print(f"[{time.strftime('%H:%M:%S')}] *** SENT REAL FLAG TO {ip}:{flag_port} ***")
+            # Send the real flag
+            try:
+                proc = subprocess.run(['echo', REAL_FLAG], stdout=subprocess.PIPE)
+                result = subprocess.run(['nc', '-u', '-w', '1', ip, str(flag_port)],
+                                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+            except Exception as e:
+                print(f"[{time.strftime('%H:%M:%S')}] Error sending real flag to {ip}:{flag_port}: {e}")
 
     except subprocess.TimeoutExpired:
         print(f"[{time.strftime('%H:%M:%S')}] Real flag send timed out")

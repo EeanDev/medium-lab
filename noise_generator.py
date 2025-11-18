@@ -132,14 +132,17 @@ def main():
                 noise_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])
 
                 if noise_type == 'ping':
+                    print(f"[{time.strftime('%H:%M:%S')}] Sending ping noise to {ip}")
                     send_noise_ping(ip)
                 elif noise_type == 'tcp':
                     port = generate_random_port()
                     data = random.choice(["noise", "data", "test"])
+                    print(f"[{time.strftime('%H:%M:%S')}] Sending TCP '{data}' to {ip}:{port}")
                     send_noise_tcp(ip, port, data)
                 elif noise_type == 'udp':
                     port = generate_random_port()
                     data = random.choice(["noise", "data", "test"])
+                    print(f"[{time.strftime('%H:%M:%S')}] Sending UDP '{data}' to {ip}:{port}")
                     send_noise_udp(ip, port, data)
 
             time.sleep(NOISE_INTERVAL)
