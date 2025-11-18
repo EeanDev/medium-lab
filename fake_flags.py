@@ -22,13 +22,7 @@ FAKE_FLAGS = [
     "FLAG{SORRY}",
     "FLAG{NotTheFlag}",
     "FLAG{AlmostThere}",
-    "FLAG{NiceTry}",
-    "FLAG{WrongOne}",
-    "FLAG{KeepLooking}",
-    "FLAG{CloseButNo}",
-    "FLAG{GettingWarmer}",
-    "FLAG{NoFlagHere}",
-    "FLAG{NOPENOPE}"
+    "FLAG{WrongOne}"
 ]
 
 def generate_all_ips(subnet):
