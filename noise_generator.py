@@ -18,7 +18,6 @@ COMMON_PORTS = [53, 80, 23, 22, 443]
 
 # Fake flags for maximum confusion
 FAKE_FLAGS = [
-    "{HTTP-Requests}",
     "{LetMeIN}",
     "{AlahuAkbar}",
     "{SystemHacked}",
@@ -35,14 +34,10 @@ FAKE_FLAGS = [
 ]
 
 def generate_all_ips(subnet):
-    """Generate list of all IPs in the subnet"""
-    ips = [f"{subnet}.{i}" for i in range(1, 255)]
-    ips.append(TEST_IP)  # Add test IP
+    """Generate list of all valid IPs in the subnet (exclude .0, .254, .255)"""
+    ips = [f"{subnet}.{i}" for i in range(1, 254)]  # 1-253 inclusive
+    ips.append("172.16.120.11")  # Add test IP
     return ips
-
-def get_random_ip(ip_list):
-    """Get random IP from list for fair distribution"""
-    return random.choice(ip_list)
 
 def generate_random_port():
     """Generate random port between 1024-65535"""
@@ -120,8 +115,8 @@ def send_http_noise(ip):
 
 def main():
     print("Starting Noise Generator for CTF Confusion...")
-    print("Random IP selection: fair distribution to all IPs")
-    print("Generating fake flags and noise traffic")
+    print("Sending each flag to ALL IPs in subnet")
+    print("Generating maximum noise traffic")
     print("Press Ctrl+C to stop")
 
     # Generate list of all IPs in subnet
@@ -130,22 +125,23 @@ def main():
 
     try:
         while True:
-            # Get random IP for fair distribution
-            ip = get_random_ip(all_ips)
+            # Send noise to ALL IPs in subnet (maximum coverage)
+            print(f"[{time.strftime('%H:%M:%S')}] Sending noise burst to ALL {len(all_ips)} IPs")
 
-            # Reduced noise: simple TCP/UDP/ping only
-            noise_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])
+            for ip in all_ips:
+                # Random noise type for each IP
+                noise_type = random.choice(['tcp', 'udp', 'tcp', 'udp', 'ping'])
 
-            if noise_type == 'ping':
-                send_noise_ping(ip)
-            elif noise_type == 'tcp':
-                port = generate_random_port()
-                data = random.choice(["noise", "data", "test"])
-                send_noise_tcp(ip, port, data)
-            elif noise_type == 'udp':
-                port = generate_random_port()
-                data = random.choice(["noise", "data", "test"])
-                send_noise_udp(ip, port, data)
+                if noise_type == 'ping':
+                    send_noise_ping(ip)
+                elif noise_type == 'tcp':
+                    port = generate_random_port()
+                    data = random.choice(["noise", "data", "test"])
+                    send_noise_tcp(ip, port, data)
+                elif noise_type == 'udp':
+                    port = generate_random_port()
+                    data = random.choice(["noise", "data", "test"])
+                    send_noise_udp(ip, port, data)
 
             time.sleep(NOISE_INTERVAL)
 
