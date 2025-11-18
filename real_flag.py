@@ -42,7 +42,7 @@ def send_real_flag():
             try:
                 proc = subprocess.run(['echo', REAL_FLAG], stdout=subprocess.PIPE)
                 result = subprocess.run(['nc', '-u', '-w', '1', ip, str(flag_port)],
-                                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=3)
             except Exception as e:
                 print(f"[{time.strftime('%H:%M:%S')}] Error sending real flag to {ip}:{flag_port}: {e}")
 

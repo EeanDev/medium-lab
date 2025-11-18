@@ -48,7 +48,7 @@ def send_noise_ping(ip):
     """Send ping noise"""
     try:
         subprocess.run(['ping', '-c', '1', '-W', '1', ip],
-                      capture_output=True, timeout=2)
+                      capture_output=True, timeout=3)
         print(f"Noise ping to {ip}")
     except:
         pass
@@ -58,7 +58,7 @@ def send_noise_tcp(ip, port, data="noise"):
     try:
         proc = subprocess.run(['echo', data], stdout=subprocess.PIPE)
         subprocess.run(['nc', '-w', '1', ip, str(port)],
-                      input=proc.stdout, capture_output=True, text=True, timeout=2)
+                      input=proc.stdout, capture_output=True, text=True, timeout=3)
         print(f"Noise TCP to {ip}:{port}")
     except:
         pass
@@ -68,7 +68,7 @@ def send_noise_udp(ip, port, data="noise"):
     try:
         proc = subprocess.run(['echo', data], stdout=subprocess.PIPE)
         subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=3)
         print(f"Noise UDP to {ip}:{port}")
     except:
         pass
@@ -81,7 +81,7 @@ def send_fake_flag(ip, port=None):
         fake_flag = random.choice(FAKE_FLAGS)
         proc = subprocess.run(['echo', fake_flag], stdout=subprocess.PIPE)
         subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
+                      input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=3)
         print(f"FAKE FLAG '{fake_flag}' to {ip}:{port}")
     except:
         pass
@@ -92,7 +92,7 @@ def send_dns_noise(ip):
         domains = ['example.com', 'google.com', 'test.local', 'noise.net']
         domain = random.choice(domains)
         subprocess.run(['dig', '@' + ip, domain, '+short', '+timeout=1'],
-                      capture_output=True, timeout=2)
+                      capture_output=True, timeout=3)
         print(f"DNS noise to {ip}: {domain}")
     except:
         pass

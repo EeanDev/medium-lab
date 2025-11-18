@@ -51,11 +51,11 @@ def send_flag_to_ip(ip, flag):
         if packet_type == 'icmp':
             proc = subprocess.run(['echo', flag], stdout=subprocess.PIPE)
             result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=1)
+                          input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=3)
         else:  # UDP
             proc = subprocess.run(['echo', flag], stdout=subprocess.PIPE)
             result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=1)
+                  input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=3)
     except Exception as e:
         print(f"[{time.strftime('%H:%M:%S')}] Error sending '{flag}' to {ip}:{port}: {e}")
 
