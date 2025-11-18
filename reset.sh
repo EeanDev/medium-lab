@@ -35,9 +35,8 @@ rm -f /var/log/ctf-fake-flags.log
 rm -f /var/log/ctf-real-flag.log
 rm -f /var/log/ctf-noise-generator.log
 
-# Remove uvmu user (if exists)
-echo "Removing uvmu user..."
-userdel -r uvmu 2>/dev/null || echo "uvmu user not found or already removed"
+# Note: uvmu user is preserved (admin account)
+echo "Preserving uvmu user (admin account)..."
 
 # Reset firewall to defaults
 echo "Resetting firewall to defaults..."
@@ -67,7 +66,7 @@ echo "  ✓ Cron jobs removed (ctf-real-flag, ctf-noise-generator)"
 echo "  ✓ Systemd services removed (ctf-fake-flags, ctf-noise-generator)"
 echo "  ✓ CTF files and directories removed (/opt/ctf-lab/)"
 echo "  ✓ Log files removed (/var/log/ctf-*.log)"
-echo "  ✓ uvmu user removed"
+echo "  ✓ uvmu user preserved (admin account)"
 echo "  ✓ Firewall reset"
 echo ""
 echo "You can now run setup.sh for a fresh installation"
