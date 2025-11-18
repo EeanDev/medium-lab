@@ -46,78 +46,6 @@ def generate_random_port(exclude_common=False):
         return generate_random_port(exclude_common=True)
     return port
 
-def send_ping(ip):
-    """Send ICMP ping packet"""
-    try:
-        result = subprocess.run(['ping', '-c', '1', '-W', '1', ip],
-                              capture_output=True, text=True, timeout=2)
-        print(f"Sent ping to {ip}")
-    except subprocess.TimeoutExpired:
-        print(f"Ping to {ip} timed out")
-    except Exception as e:
-        print(f"Error sending ping to {ip}: {e}")
-
-def send_tcp_packet(ip, port, data="noise"):
-    """Send TCP packet using netcat"""
-    try:
-        proc = subprocess.run(['echo', data],
-                            stdout=subprocess.PIPE)
-        result = subprocess.run(['nc', '-w', '1', ip, str(port)],
-                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        print(f"Sent TCP packet to {ip}:{port}")
-    except subprocess.TimeoutExpired:
-        print(f"TCP connection to {ip}:{port} timed out")
-    except Exception as e:
-        print(f"Error sending TCP to {ip}:{port}: {e}")
-
-def send_udp_packet(ip, port, data="noise"):
-    """Send UDP packet using netcat"""
-    try:
-        proc = subprocess.run(['echo', data],
-                            stdout=subprocess.PIPE)
-        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        print(f"Sent UDP packet to {ip}:{port}")
-    except subprocess.TimeoutExpired:
-        print(f"UDP send to {ip}:{port} timed out")
-    except Exception as e:
-        print(f"Error sending UDP to {ip}:{port}: {e}")
-
-def send_dns_query(ip):
-    """Send DNS query using dig"""
-    try:
-        result = subprocess.run(['dig', '@' + ip, 'example.com', '+short', '+timeout=1'],
-                              capture_output=True, text=True, timeout=2)
-        print(f"Sent DNS query to {ip}:53")
-    except subprocess.TimeoutExpired:
-        print(f"DNS query to {ip} timed out")
-    except Exception as e:
-        print(f"Error sending DNS query to {ip}: {e}")
-
-def send_http_request(ip):
-    """Send HTTP GET request"""
-    try:
-        http_request = "GET / HTTP/1.0\r\nHost: example.com\r\n\r\n"
-        proc = subprocess.run(['echo', '-e', http_request],
-                            stdout=subprocess.PIPE)
-        result = subprocess.run(['nc', '-w', '1', ip, '80'],
-                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        print(f"Sent HTTP request to {ip}:80")
-    except subprocess.TimeoutExpired:
-        print(f"HTTP request to {ip}:80 timed out")
-    except Exception as e:
-        print(f"Error sending HTTP to {ip}:80: {e}")
-
-def send_telnet_attempt(ip):
-    """Send Telnet connection attempt"""
-    try:
-        result = subprocess.run(['nc', '-w', '1', ip, '23'],
-                              input=b'', capture_output=True, timeout=2)
-        print(f"Sent Telnet attempt to {ip}:23")
-    except subprocess.TimeoutExpired:
-        print(f"Telnet attempt to {ip}:23 timed out")
-    except Exception as e:
-        print(f"Error sending Telnet to {ip}:23: {e}")
 
 def send_flag_packet(ip, port):
     """Send flag packet to random port (UDP only for visibility)"""
@@ -132,20 +60,6 @@ def send_flag_packet(ip, port):
         print(f"Flag send to {ip}:{port} timed out")
     except Exception as e:
         print(f"Error sending flag to {ip}:{port}: {e}")
-
-def send_fake_flag_packet(ip, port, context):
-    """Send fake flag packet for confusion"""
-    try:
-        fake_flag = random.choice(CONTEXT_FLAGS[context])
-        proc = subprocess.run(['echo', fake_flag],
-                            stdout=subprocess.PIPE)
-        result = subprocess.run(['nc', '-u', '-w', '1', ip, str(port)],
-                              input=proc.stdout.decode('utf-8'), capture_output=True, text=True, timeout=2)
-        print(f"Sent fake flag '{fake_flag}' to {ip}:{port}")
-    except subprocess.TimeoutExpired:
-        print(f"Fake flag send to {ip}:{port} timed out")
-    except Exception as e:
-        print(f"Error sending fake flag to {ip}:{port}: {e}")
 
 def is_admin_logged_in():
     """Check if admin users are currently logged in"""
